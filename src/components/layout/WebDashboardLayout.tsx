@@ -12,6 +12,7 @@ import {
   Animated,
   I18nManager,
   PanResponder,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -873,16 +874,15 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
       <View style={styles.profileCard}>
         <View style={[styles.profileCardInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={styles.avatarBoxSquare}>
-            <AppText variant="captionBold" color="#0B1A3A" style={styles.avatarTextSquare}>
-              CORBIT
-            </AppText>
-            <AppText variant="caption" color="#0B1A3A" style={{ fontSize: 7, fontWeight: 'bold' }}>
-              المدار
-            </AppText>
+            <Image
+              source={require('../../../assets/logo.png')}
+              style={styles.avatarLogoImage}
+              resizeMode="contain"
+            />
           </View>
           <View style={[styles.profileTextCol, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
             <AppText variant="captionBold" color="#FFFFFF" style={styles.profileNameText} numberOfLines={1}>
-              {user?.name || (isCounselor ? (isRTL ? 'سعد إبراهيم الناصر' : 'Saad Ibrahim Al-Nasser') : isTeacher ? (isRTL ? 'معلم' : 'Teacher') : (isRTL ? 'مدير المدرسة' : 'School Principal'))}
+              {user?.name || (isCounselor ? (isRTL ? 'سعد إبراهيم الناصر' : 'Saad Ibrahim Al-Nasser') : isTeacher ? (isRTL ? 'معلم' : 'Teacher') : (isRTL ? 'فهد عبدالعزيز السالم' : 'Fahad Abdulaziz Al-Salem'))}
             </AppText>
             <View style={[styles.rolePillRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <View style={[styles.roleBadgePill, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -892,7 +892,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
                     ? (isRTL ? 'المرشد الطلابي' : 'Student Counselor')
                     : isTeacher
                     ? (isRTL ? 'معلم' : 'Teacher')
-                    : (isRTL ? 'مدير المدرسة' : 'School Principal')}
+                    : (isRTL ? 'وكيل المدرسة' : 'School Vice Principal')}
                 </AppText>
               </View>
             </View>
@@ -1297,14 +1297,12 @@ ltrLayout: {
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 2,
+    padding: 3,
+    overflow: 'hidden',
   },
-  avatarTextSquare: {
-    fontSize: 8,
-    fontWeight: 'bold',
-    color: '#0B1A3A',
-    lineHeight: 10,
-    textAlign: 'center',
+  avatarLogoImage: {
+    width: '100%',
+    height: '100%',
   },
   profileTextCol: {
     flex: 1,

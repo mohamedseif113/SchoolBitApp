@@ -40,11 +40,7 @@ export const AuthHeroSection: React.FC<AuthHeroSectionProps> = ({ isRTL, mode = 
         {/* Banner Image Preview */}
         <View style={styles.imageBox}>
           <Image
-            source={
-              mode === 'login'
-                ? require('../../../assets/banner-1.jpg')
-                : require('../../../assets/banner-4.jpg')
-            }
+            source={require('../../../assets/firstbackground.png')}
             style={styles.bannerImage}
             resizeMode="cover"
           />
