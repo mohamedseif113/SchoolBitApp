@@ -4,7 +4,12 @@
     "slug": "SchoolBitApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/android-icon-foreground.png",
+    "splash": {
+      "image": "./assets/android-icon-foreground.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#07132B"
+    },
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -20,6 +25,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
