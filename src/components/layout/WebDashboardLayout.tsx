@@ -875,7 +875,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
         <View style={[styles.profileCardInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={styles.avatarBoxSquare}>
             <Image
-              source={require('../../../assets/logo.png')}
+              source={school?.logo_url ? { uri: school.logo_url } : require('../../../assets/logo.png')}
               style={styles.avatarLogoImage}
               resizeMode="contain"
             />

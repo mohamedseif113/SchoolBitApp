@@ -5,11 +5,6 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/firstbackground.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#07132B"
-    },
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -26,7 +21,15 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/firstbackground.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#07132B"
+        }
+      ]
     ],
     "extra": {
       "eas": {
