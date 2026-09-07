@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet, ViewStyle, DimensionValue } from 'react-native';
 import { useUiStore } from '../../store/uiStore';
+import { useAppDirection } from '../../hooks/useAppDirection';
 
 export interface SkeletonProps {
   width?: DimensionValue;
@@ -70,8 +71,9 @@ export const SkeletonText: React.FC<{
   gap?: number;
   style?: ViewStyle;
 }> = ({ lines = 2, height = 14, gap = 8, style }) => {
+  const { isRTL } = useAppDirection();
   return (
-    <View style={[{ gap }, style]}>
+    <View style={[{ gap, alignItems: isRTL ? 'flex-end' : 'flex-start' }, style]}>
       {Array.from({ length: lines }).map((_, index) => (
         <SkeletonBlock
           key={index}

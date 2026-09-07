@@ -819,7 +819,18 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
       setMobileSidebarOpen(false);
     }
     startNavigation(item.screenName);
-    navigation.navigate(item.screenName, item.params);
+
+    // Tab screens live inside MainTabs – navigate via parent to avoid "not handled" warning
+    const TAB_SCREENS = ['Dashboard', 'Students', 'Attendance', 'Tasks'];
+    if (TAB_SCREENS.includes(item.screenName)) {
+      navigation.navigate('MainTabs', {
+        screen: item.screenName,
+        params: item.params,
+      });
+    } else {
+      navigation.navigate(item.screenName, item.params);
+    }
+
     setTimeout(() => {
       finishNavigation();
     }, 450);
@@ -910,8 +921,14 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
             isDashboardActive && styles.dashboardBtnActive,
           ]}
           onPress={() => {
-            if (!isDesktop) handleCloseMobileDrawer();
-            navigation.navigate('Dashboard');
+            handleNavigate({
+              id: 'dashboard',
+              labelAr: 'لوحة التحكم',
+              labelEn: 'Dashboard',
+              route: '/dashboard',
+              icon: 'grid',
+              screenName: 'Dashboard',
+            });
           }}
           accessibilityRole="button"
           accessibilityLabel={isRTL ? 'لوحة التحكم' : 'Dashboard'}

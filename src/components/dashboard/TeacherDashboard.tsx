@@ -173,14 +173,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       </View>
 
       {/* 2. 5-Metric Summary Cards Grid (2-column responsive on mobile, 5 in a row on desktop) */}
-      <View style={[styles.kpiGrid]}>
+      <View style={[styles.kpiGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         {/* Metric 1: Class Students */}
         <TouchableOpacity
           style={[styles.kpiCard, isDesktop && styles.kpiCardDesktop, styles.kpiGreenBorder, isDark && styles.darkCard]}
           onPress={() => navigation.navigate('Students')}
           accessibilityRole="button"
         >
-          <View style={[styles.kpiCardHeader]}>
+          <View style={[styles.kpiCardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <View style={styles.iconCircleGreen}>
               <Icon name="users" size={18} color="#12B76A" />
             </View>
@@ -204,7 +204,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           onPress={() => navigation.navigate('Schedule')}
           accessibilityRole="button"
         >
-          <View style={[styles.kpiCardHeader]}>
+          <View style={[styles.kpiCardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <View style={styles.iconCircleBlue}>
               <Icon name="calendar" size={18} color="#1246B7" />
             </View>
@@ -228,7 +228,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           onPress={() => navigation.navigate('Attendance')}
           accessibilityRole="button"
         >
-          <View style={[styles.kpiCardHeader]}>
+          <View style={[styles.kpiCardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <View style={styles.iconCircleTeal}>
               <Icon name="chart" size={18} color="#0E9384" />
             </View>
@@ -252,7 +252,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           onPress={() => navigation.navigate('Tasks')}
           accessibilityRole="button"
         >
-          <View style={[styles.kpiCardHeader]}>
+          <View style={[styles.kpiCardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <View style={styles.iconCircleYellow}>
               <Icon name="clipboard" size={18} color="#F79009" />
             </View>
@@ -276,7 +276,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           onPress={() => navigation.navigate('Tasks')}
           accessibilityRole="button"
         >
-          <View style={[styles.kpiCardHeader]}>
+          <View style={[styles.kpiCardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <View style={styles.iconCirclePink}>
               <Icon name="clock" size={18} color="#F04438" />
             </View>
@@ -299,8 +299,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       <View style={styles.middleGrid}>
         {/* Today's Classes */}
         <View style={[styles.widgetCard, isDark && styles.darkCard]}>
-          <View style={[styles.widgetHeader]}>
-            <View style={[styles.widgetHeaderTitleRow]}>
+          <View style={[styles.widgetHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.widgetHeaderTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <Icon name="clock" size={18} color="#1246B7" />
               <Text style={[styles.widgetTitle, isDark && styles.darkText]}>
                 {t('teacher_dashboard.todays_classes', 'حصصي اليوم')}
@@ -327,16 +327,36 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 const subjectLabel = cls.subject || cls.title || '—';
 
                 return (
-                  <View key={String(cls.id || index)} style={[styles.classItemRow]}>
+                  <View
+                    key={String(cls.id || index)}
+                    style={[
+                      styles.classItemRow,
+                      { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                    ]}
+                  >
                     <Text style={styles.classTimeText}>{timeText}</Text>
                     <View style={styles.classPillSmall}>
                       <Text style={styles.classPillSmallText}>{classLabel}</Text>
                     </View>
-                    <View style={[styles.classDetailsGroup, styles.alignStart]}>
-                      <Text style={[styles.classSubjectText, isDark && styles.darkText]} numberOfLines={1}>
+                    <View style={[styles.classDetailsGroup, isRTL ? styles.alignEnd : styles.alignStart]}>
+                      <Text
+                        style={[
+                          styles.classSubjectText,
+                          isDark && styles.darkText,
+                          isRTL ? styles.rtlText : styles.ltrText,
+                        ]}
+                        numberOfLines={1}
+                      >
                         {subjectLabel}
                       </Text>
-                      <Text style={styles.classRoomText}>{roomLabel}</Text>
+                      <Text
+                        style={[
+                          styles.classRoomText,
+                          isRTL ? styles.rtlText : styles.ltrText,
+                        ]}
+                      >
+                        {roomLabel}
+                      </Text>
                     </View>
                     <View
                       style={[
@@ -372,8 +392,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
         {/* Pending Tasks */}
         <View style={[styles.widgetCard, isDark && styles.darkCard]}>
-          <View style={[styles.widgetHeader]}>
-            <View style={[styles.widgetHeaderTitleRow]}>
+          <View style={[styles.widgetHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.widgetHeaderTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <Icon name="clipboard" size={18} color="#F79009" />
               <Text style={[styles.widgetTitle, isDark && styles.darkText]}>
                 {t('teacher_dashboard.pending_tasks_title', 'مهامي المعلقة')}
@@ -397,6 +417,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     key={String(task.id || index)}
                     style={[
                       styles.taskItemRow,
+                      { flexDirection: isRTL ? 'row-reverse' : 'row' },
                       index === tasksList.length - 1 && { borderBottomWidth: 0 },
                     ]}
                   >
@@ -412,18 +433,19 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       {isCompleted ? <Icon name="check" size={12} color="#FFFFFF" /> : null}
                     </TouchableOpacity>
 
-                    <View style={[styles.taskDetailsGroup, styles.alignStart]}>
+                    <View style={[styles.taskDetailsGroup, isRTL ? styles.alignEnd : styles.alignStart]}>
                       <Text
                         style={[
                           styles.taskTitleText,
                           isCompleted && styles.taskTitleCompleted,
                           isDark && styles.darkText,
+                          isRTL ? styles.rtlText : styles.ltrText,
                         ]}
                         numberOfLines={1}
                       >
                         {task.title}
                       </Text>
-                      <View style={[styles.taskMetaRow]}>
+                      <View style={[styles.taskMetaRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                         <Icon name="calendar" size={11} color={colors.tx2} />
                         <Text style={styles.taskDateText}>{dateText}</Text>
                       </View>
@@ -466,14 +488,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       <View style={styles.middleGrid}>
         {/* Class Performance */}
         <View style={[styles.widgetCard, isDark && styles.darkCard]}>
-          <View style={[styles.widgetHeader]}>
-            <View style={[styles.widgetHeaderTitleRow]}>
+          <View style={[styles.widgetHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.widgetHeaderTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <Icon name="chart" size={18} color="#1246B7" />
-              <View style={styles.alignStart}>
-                <Text style={[styles.widgetTitle, isDark && styles.darkText]}>
+              <View style={isRTL ? styles.alignEnd : styles.alignStart}>
+                <Text style={[styles.widgetTitle, isDark && styles.darkText, isRTL ? styles.rtlText : styles.ltrText]}>
                   {t('teacher_dashboard.class_performance', 'أداء صفوفي')}
                 </Text>
-                <Text style={styles.widgetSubtext}>
+                <Text style={[styles.widgetSubtext, isRTL ? styles.rtlText : styles.ltrText]}>
                   {t('teacher_dashboard.academic_and_attendance', 'المتوسط الأكاديمي ونسبة الحضور')}
                 </Text>
               </View>
@@ -492,6 +514,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     key={String(index)}
                     style={[
                       styles.performanceRow,
+                      { flexDirection: isRTL ? 'row-reverse' : 'row' },
                       index === classPerformance.length - 1 && { borderBottomWidth: 0 },
                     ]}
                   >
@@ -518,9 +541,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
         {/* Student Insights */}
         <View style={[styles.widgetCard, isDark && styles.darkCard]}>
-          <View style={[styles.widgetHeader]}>
-            <View style={[styles.widgetHeaderTitleRow]}>
-              <Icon name="users" size={18} color="#12B76A" />
+          <View style={[styles.widgetHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.widgetHeaderTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <Icon name="users" size={18} color="#1246B7" />
               <Text style={[styles.widgetTitle, isDark && styles.darkText]}>
                 {t('teacher_dashboard.student_insights', 'لمحة عن الطلاب')}
               </Text>
@@ -529,13 +552,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
           <View style={styles.insightsList}>
             {/* Top Students */}
-            <View style={[styles.insightRow]}>
-              <Icon name="award" size={18} color="#12B76A" />
-              <View style={[styles.insightTextGroup, styles.alignStart]}>
-                <Text style={[styles.insightTitleText, isDark && styles.darkText]}>
+            <View style={[styles.insightRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <Icon name="award" size={18} color="#1246B7" />
+              <View style={[styles.insightTextGroup, isRTL ? styles.alignEnd : styles.alignStart]}>
+                <Text style={[styles.insightTitleText, isDark && styles.darkText, isRTL ? styles.rtlText : styles.ltrText]}>
                   {t('teacher_dashboard.top_students', 'المتميزون')}
                 </Text>
-                <Text style={styles.insightSubtext}>
+                <Text style={[styles.insightSubtext, isRTL ? styles.rtlText : styles.ltrText]}>
                   {isLinked
                     ? (topStudents.length ? `${topStudents.length} ${t('teacher_dashboard.students_count_unit', 'طلاب متميزين')}` : t('teacher_dashboard.no_top_students', 'لا يوجد طلاب'))
                     : t('teacher_dashboard.appears_after_linking', 'يظهر بعد ربط وحدة الدرجات')}
@@ -547,13 +570,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </View>
 
             {/* Needs Follow-up */}
-            <View style={[styles.insightRow, { borderBottomWidth: 0 }]}>
+            <View style={[styles.insightRow, { flexDirection: isRTL ? 'row-reverse' : 'row', borderBottomWidth: 0 }]}>
               <Icon name="info" size={18} color="#F79009" />
-              <View style={[styles.insightTextGroup, styles.alignStart]}>
-                <Text style={[styles.insightTitleText, isDark && styles.darkText]}>
+              <View style={[styles.insightTextGroup, isRTL ? styles.alignEnd : styles.alignStart]}>
+                <Text style={[styles.insightTitleText, isDark && styles.darkText, isRTL ? styles.rtlText : styles.ltrText]}>
                   {t('teacher_dashboard.needs_followup', 'يحتاجون متابعة')}
                 </Text>
-                <Text style={styles.insightSubtext}>
+                <Text style={[styles.insightSubtext, isRTL ? styles.rtlText : styles.ltrText]}>
                   {isLinked
                     ? (needsFollowup.length ? `${needsFollowup.length} ${t('teacher_dashboard.students_count_unit', 'طلاب بحاجة لمتابعة')}` : t('teacher_dashboard.no_followup_students', 'لا يوجد طلاب'))
                     : t('teacher_dashboard.appears_after_linking', 'يظهر بعد ربط وحدة الدرجات')}
@@ -582,7 +605,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[styles.quickActionsScroll]}
+          contentContainerStyle={[styles.quickActionsScroll, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
         >
           {/* 1. Mark Attendance */}
           {hasAnyPermission('attendance.students.view', 'attendance.view') && (

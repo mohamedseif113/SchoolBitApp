@@ -2,17 +2,19 @@ import React from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import { SkeletonBlock, SkeletonCircle, SkeletonText } from '../common/Skeleton';
 import { useUiStore } from '../../store/uiStore';
+import { useAppDirection } from '../../hooks/useAppDirection';
 
 export const DashboardSkeleton: React.FC = () => {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
   const { theme } = useUiStore();
+  const { isRTL } = useAppDirection();
   const isDark = theme === 'dark';
 
   return (
     <View style={styles.container}>
       {/* Header Title Skeleton */}
-      <View style={styles.headerBlock}>
+      <View style={[styles.headerBlock, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
         <SkeletonBlock width={180} height={26} borderRadius={6} />
         <SkeletonBlock width={260} height={14} borderRadius={4} />
       </View>
@@ -20,7 +22,14 @@ export const DashboardSkeleton: React.FC = () => {
       {/* Top 4 Stat Cards */}
       <View style={[styles.grid4, isDesktop && styles.grid4Desktop]}>
         {[1, 2, 3, 4].map((i) => (
-          <View key={i} style={[styles.card, isDark && styles.darkCard]}>
+          <View
+            key={i}
+            style={[
+              styles.card,
+              isDark && styles.darkCard,
+              { alignItems: isRTL ? 'flex-end' : 'flex-start' },
+            ]}
+          >
             <View style={styles.cardHeaderRow}>
               <SkeletonCircle size={38} />
               <SkeletonBlock width={60} height={20} borderRadius={10} />
@@ -44,11 +53,16 @@ export const DashboardSkeleton: React.FC = () => {
 
         {/* Recent Activity List */}
         <View style={[styles.card, styles.flex1, isDark && styles.darkCard]}>
-          <SkeletonBlock width={140} height={20} borderRadius={6} style={styles.mb14} />
+          <SkeletonBlock
+            width={140}
+            height={20}
+            borderRadius={6}
+            style={[styles.mb14, { alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}
+          />
           {[1, 2, 3, 4].map((i) => (
             <View key={i} style={styles.listItemRow}>
               <SkeletonCircle size={32} />
-              <View style={styles.flex1}>
+              <View style={[styles.flex1, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
                 <SkeletonBlock width="85%" height={14} borderRadius={4} />
                 <SkeletonBlock width="50%" height={10} borderRadius={4} style={styles.mt4} />
               </View>
@@ -62,6 +76,7 @@ export const DashboardSkeleton: React.FC = () => {
 
 export const TablePageSkeleton: React.FC = () => {
   const { theme } = useUiStore();
+  const { isRTL } = useAppDirection();
   const isDark = theme === 'dark';
 
   return (
@@ -95,7 +110,7 @@ export const TablePageSkeleton: React.FC = () => {
           <View key={i} style={styles.tableRow}>
             <View style={styles.cellUser}>
               <SkeletonCircle size={32} />
-              <View>
+              <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                 <SkeletonBlock width={120} height={14} borderRadius={4} />
                 <SkeletonBlock width={80} height={10} borderRadius={4} style={styles.mt4} />
               </View>
@@ -114,6 +129,7 @@ export const CardsGridSkeleton: React.FC = () => {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
   const { theme } = useUiStore();
+  const { isRTL } = useAppDirection();
   const isDark = theme === 'dark';
 
   return (
@@ -146,22 +162,44 @@ export const CardsGridSkeleton: React.FC = () => {
 
 export const FormPageSkeleton: React.FC = () => {
   const { theme } = useUiStore();
+  const { isRTL } = useAppDirection();
   const isDark = theme === 'dark';
 
   return (
     <View style={styles.container}>
       <View style={[styles.card, isDark && styles.darkCard]}>
-        <SkeletonBlock width={220} height={26} borderRadius={6} />
-        <SkeletonBlock width={300} height={14} borderRadius={4} style={styles.mt4} />
+        <SkeletonBlock
+          width={220}
+          height={26}
+          borderRadius={6}
+          style={{ alignSelf: isRTL ? 'flex-end' : 'flex-start' }}
+        />
+        <SkeletonBlock
+          width={300}
+          height={14}
+          borderRadius={4}
+          style={[styles.mt4, { alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}
+        />
 
         <View style={styles.formGroup}>
           {[1, 2, 3, 4].map((i) => (
-            <View key={i} style={styles.fieldBlock}>
+            <View
+              key={i}
+              style={[
+                styles.fieldBlock,
+                { alignItems: isRTL ? 'flex-end' : 'flex-start' },
+              ]}
+            >
               <SkeletonBlock width={120} height={14} borderRadius={4} />
               <SkeletonBlock width="100%" height={42} borderRadius={10} />
             </View>
           ))}
-          <SkeletonBlock width={140} height={42} borderRadius={10} style={styles.mt14} />
+          <SkeletonBlock
+            width={140}
+            height={42}
+            borderRadius={10}
+            style={[styles.mt14, { alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}
+          />
         </View>
       </View>
     </View>
@@ -183,7 +221,8 @@ export const PageSkeletonSelector: React.FC<PageSkeletonSelectorProps> = ({ rout
     r.includes('finance') ||
     r.includes('report') ||
     r.includes('summons') ||
-    r.includes('noor')
+    r.includes('noor') ||
+    r.includes('schedule')
   ) {
     return <TablePageSkeleton />;
   }
@@ -193,11 +232,19 @@ export const PageSkeletonSelector: React.FC<PageSkeletonSelectorProps> = ({ rout
     r.includes('staff') ||
     r.includes('committee') ||
     r.includes('homework') ||
-    r.includes('portfolio')
+    r.includes('portfolio') ||
+    r.includes('message') ||
+    r.includes('whatsapp')
   ) {
     return <CardsGridSkeleton />;
   }
-  if (r.includes('setting') || r.includes('integration') || r.includes('behavior') || r.includes('atrisk')) {
+  if (
+    r.includes('setting') ||
+    r.includes('integration') ||
+    r.includes('behavior') ||
+    r.includes('atrisk') ||
+    r.includes('exam')
+  ) {
     return <FormPageSkeleton />;
   }
   return <TablePageSkeleton />;
@@ -232,6 +279,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   cardHeaderRow: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -264,6 +312,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   tableHeaderRow: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingBottom: 12,
@@ -272,6 +321,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   tableRow: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -301,6 +351,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   cardFooterRow: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -311,6 +362,7 @@ const styles = StyleSheet.create({
   },
   fieldBlock: {
     gap: 6,
+    width: '100%',
   },
   my8: {
     marginVertical: 8,

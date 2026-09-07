@@ -48,6 +48,27 @@ export default function DashboardScreen() {
     return 'manager';
   }, [role]);
 
+  // Dynamic role title for the top header subtitle
+  const roleSubtitle = useMemo(() => {
+    if (user?.role_title) return user.role_title;
+    if (user?.role_name) return user.role_name;
+    switch (normalizedRole) {
+      case 'teacher':
+        return isRTL ? 'معلم' : 'Teacher';
+      case 'counselor':
+        return isRTL ? 'المرشد الطلابي' : 'Student Counselor';
+      case 'student':
+        return isRTL ? 'طالب' : 'Student';
+      case 'parent':
+        return isRTL ? 'ولي أمر' : 'Parent / Guardian';
+      case 'vice_principal':
+        return isRTL ? 'وكيل المدرسة' : 'Vice Principal';
+      case 'manager':
+      default:
+        return isRTL ? 'مدير المدرسة' : 'School Principal';
+    }
+  }, [user?.role_title, user?.role_name, normalizedRole, isRTL]);
+
   const {
     data: dashboardData,
     badges,
@@ -157,7 +178,7 @@ export default function DashboardScreen() {
 
       <WebDashboardLayout
         title={t('navigation.dashboard', isRTL ? 'لوحة التحكم' : 'Dashboard')}
-        subtitle={isRTL ? 'مدير المدرسة' : 'School Principal'}
+        subtitle={roleSubtitle}
         unreadCount={badges?.messages_unread ?? 29}
         onOpenNotifications={() => setNotificationsVisible(true)}
       >
