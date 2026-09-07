@@ -28,6 +28,7 @@ import CounselorDashboard from '../../components/dashboard/CounselorDashboard';
 import ManagerDashboard from '../../components/dashboard/ManagerDashboard';
 import StudentDashboard from '../../components/dashboard/StudentDashboard';
 import ParentDashboard from '../../components/dashboard/ParentDashboard';
+import { VicePrincipalDashboard } from '../../components/dashboard/VicePrincipalDashboard';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -50,6 +51,12 @@ export default function DashboardScreen() {
 
   // Dynamic role title for the top header subtitle
   const roleSubtitle = useMemo(() => {
+    if (normalizedRole === 'manager') {
+      return isRTL ? 'مدير المدرسة' : 'School Principal';
+    }
+    if (normalizedRole === 'vice_principal') {
+      return isRTL ? 'وكيل المدرسة' : 'Vice Principal';
+    }
     if (user?.role_title) return user.role_title;
     if (user?.role_name) return user.role_name;
     switch (normalizedRole) {
@@ -61,9 +68,6 @@ export default function DashboardScreen() {
         return isRTL ? 'طالب' : 'Student';
       case 'parent':
         return isRTL ? 'ولي أمر' : 'Parent / Guardian';
-      case 'vice_principal':
-        return isRTL ? 'وكيل المدرسة' : 'Vice Principal';
-      case 'manager':
       default:
         return isRTL ? 'مدير المدرسة' : 'School Principal';
     }
@@ -210,6 +214,16 @@ export default function DashboardScreen() {
             dashboardData={dashboardData}
             liveTasks={liveTasks}
             onRefresh={onRefresh}
+          />
+        ) : normalizedRole === 'vice_principal' ? (
+          <VicePrincipalDashboard
+            dashboardData={dashboardData}
+            liveTasks={liveTasks}
+            liveSchedule={liveSchedule}
+            onRefresh={onRefresh}
+            onToggleTask={handleToggleTask}
+            onOpenNewTask={() => setNewTaskModalVisible(true)}
+            onOpenMessage={() => setMessageModalVisible(true)}
           />
         ) : (
           <ManagerDashboard

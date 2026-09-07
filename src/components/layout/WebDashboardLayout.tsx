@@ -52,6 +52,7 @@ export interface NavSection {
   labelAr: string;
   labelEn: string;
   icon: IconName;
+  badge?: number | string | ((badges: any) => number | string | undefined);
   permission?: string;
   items: NavChildItem[];
 }
@@ -71,7 +72,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
   const isDesktop = width >= 1024;
 
   const { user, school, role, isOwner, hasPermission, logout } = useAuthStore();
-  const { lang, theme, toggleLang } = useUiStore();
+  const { lang, theme, toggleLang, toggleTheme } = useUiStore();
   const { badges } = useDashboard();
   const { isRTL } = useAppDirection();
 
@@ -170,6 +171,31 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
     role === 'مرشد' ||
     role === 'موجه' ||
     role === 'المرشد الطلابي';
+  const isVicePrincipal =
+    normalizedRole.includes('vice') ||
+    normalizedRole.includes('assistant') ||
+    role === 'وكيل' ||
+    role === 'وكيلة' ||
+    role === 'وكيل المدرسة';
+  const isManagement =
+    isOwner ||
+    isVicePrincipal ||
+    normalizedRole.includes('admin') ||
+    normalizedRole.includes('principal') ||
+    normalizedRole.includes('manager');
+
+  const userRoleDisplay = useMemo(() => {
+    if (user?.role_title) return user.role_title;
+    if (user?.role_name) return user.role_name;
+    if (isVicePrincipal) return isRTL ? 'وكيل المدرسة' : 'Vice Principal';
+    if (isCounselor) return isRTL ? 'المرشد الطلابي' : 'Student Counselor';
+    if (isTeacher) return isRTL ? 'معلم' : 'Teacher';
+    return isRTL ? 'مدير المدرسة' : 'School Principal';
+  }, [user, isVicePrincipal, isCounselor, isTeacher, isRTL]);
+
+  const userNameDisplay = useMemo(() => {
+    return user?.name || (isVicePrincipal ? (isRTL ? 'فهد عبدالعزيز السالم' : 'Fahad Abdulaziz Al-Salem') : isCounselor ? (isRTL ? 'سعد إبراهيم الناصر' : 'Saad Ibrahim Al-Nasser') : isTeacher ? (isRTL ? 'معلم' : 'Teacher') : (isRTL ? 'فهد عبدالعزيز السالم' : 'Fahad Abdulaziz Al-Salem'));
+  }, [user, isVicePrincipal, isCounselor, isTeacher, isRTL]);
 
   // Navigation sections adapted for Counselor vs Teacher vs Manager/Admin
   const navSections: NavSection[] = useMemo(() => {
@@ -348,6 +374,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
         labelAr: 'الطلاب',
         labelEn: 'Students',
         icon: 'users',
+        badge: (b) => b?.students_count ?? 50,
         permission: 'employees.view',
         items: [
           {
@@ -479,7 +506,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
         id: 'academic',
         labelAr: 'الأكاديمي',
         labelEn: 'Academic',
-        icon: 'award',
+        icon: 'fileText',
         permission: 'schedule.view',
         items: [
           {
@@ -542,7 +569,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
       },
       {
         id: 'staff',
-        labelAr: 'الموظفون',
+        labelAr: 'الكادر',
         labelEn: 'Staff',
         icon: 'staff',
         permission: 'hr.employee.profile.view',
@@ -662,72 +689,79 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
           },
         ],
       },
-      {
-        id: 'settings',
-        labelAr: 'الإعدادات',
-        labelEn: 'Settings',
-        icon: 'settings',
-        permission: 'settings.manage',
-        items: [
-          {
-            id: 'roles',
-            labelAr: 'الأدوار',
-            labelEn: 'Roles',
-            route: '/access/roles',
-            screenName: 'Settings',
-            params: { section: 'roles' },
-            icon: 'shield',
-            permission: 'sub_users.manage',
-          },
-          {
-            id: 'permission_matrix',
-            labelAr: 'مصفوفة الصلاحيات',
-            labelEn: 'Permission Matrix',
-            route: '/settings/permissions',
-            screenName: 'Settings',
-            params: { section: 'permissions' },
-            icon: 'grid',
-            permission: 'permissions.matrix.manage',
-          },
-          {
-            id: 'school_settings',
-            labelAr: 'إعدادات المدرسة',
-            labelEn: 'School Settings',
-            route: '/settings',
-            screenName: 'Settings',
-            icon: 'settings',
-            permission: 'settings.manage',
-          },
-          {
-            id: 'delivery_status',
-            labelAr: 'حالات التسليم',
-            labelEn: 'Notification Status',
-            route: '/settings/delivery-status',
-            screenName: 'Settings',
-            params: { section: 'delivery_status' },
-            icon: 'bell',
-            permission: 'settings.manage',
-          },
-          {
-            id: 'audit_log',
-            labelAr: 'سجل العمليات',
-            labelEn: 'Audit Log',
-            route: '/settings/audit-log',
-            screenName: 'Settings',
-            params: { section: 'audit_log' },
-            icon: 'clock',
-            permission: 'audit.view',
-          },
-        ],
-      },
+      ...(!isVicePrincipal && (isOwner || hasPermission('settings.manage'))
+        ? [
+            {
+              id: 'settings',
+              labelAr: 'الإعدادات',
+              labelEn: 'Settings',
+              icon: 'settings' as IconName,
+              permission: 'settings.manage',
+              items: [
+                {
+                  id: 'roles',
+                  labelAr: 'الأدوار',
+                  labelEn: 'Roles',
+                  route: '/access/roles',
+                  screenName: 'Settings',
+                  params: { section: 'roles' },
+                  icon: 'shield' as IconName,
+                  permission: 'sub_users.manage',
+                },
+                {
+                  id: 'permission_matrix',
+                  labelAr: 'مصفوفة الصلاحيات',
+                  labelEn: 'Permission Matrix',
+                  route: '/settings/permissions',
+                  screenName: 'Settings',
+                  params: { section: 'permissions' },
+                  icon: 'grid' as IconName,
+                  permission: 'permissions.matrix.manage',
+                },
+                {
+                  id: 'school_settings',
+                  labelAr: 'إعدادات المدرسة',
+                  labelEn: 'School Settings',
+                  route: '/settings',
+                  screenName: 'Settings',
+                  icon: 'settings' as IconName,
+                  permission: 'settings.manage',
+                },
+                {
+                  id: 'delivery_status',
+                  labelAr: 'حالات التسليم',
+                  labelEn: 'Notification Status',
+                  route: '/settings/delivery-status',
+                  screenName: 'Settings',
+                  params: { section: 'delivery_status' },
+                  icon: 'bell' as IconName,
+                  permission: 'settings.manage',
+                },
+                {
+                  id: 'audit_log',
+                  labelAr: 'سجل العمليات',
+                  labelEn: 'Audit Log',
+                  route: '/settings/audit-log',
+                  screenName: 'Settings',
+                  params: { section: 'audit_log' },
+                  icon: 'clock' as IconName,
+                  permission: 'audit.view',
+                },
+              ],
+            },
+          ]
+        : []),
     ];
-  }, [isTeacher, isCounselor]);
+  }, [isTeacher, isCounselor, isVicePrincipal, isOwner, hasPermission]);
 
   // Filter sections and items according to existing role & permission system
   const authorizedSections = useMemo(() => {
     return navSections
       .map((section) => {
         const filteredItems = section.items.filter((item) => {
+          if (isVicePrincipal) {
+            return section.id !== 'settings';
+          }
           if (isOwner) return true;
           if (!item.permission) return true;
           return hasPermission(item.permission);
@@ -739,10 +773,11 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
         };
       })
       .filter((section) => {
-        if (isOwner) return true;
+        if (isVicePrincipal && section.id === 'settings') return false;
+        if (isManagement) return section.items.length > 0;
         return section.items.length > 0;
       });
-  }, [navSections, isOwner, hasPermission]);
+  }, [navSections, isManagement, isVicePrincipal, isOwner, hasPermission]);
 
   // User manual accordion toggle overrides
   const [userToggledSections, setUserToggledSections] = useState<Record<string, boolean>>({});
@@ -852,6 +887,14 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
     return item.badge;
   };
 
+  const resolveSectionBadge = (section: NavSection): string | number | undefined => {
+    if (!section.badge) return undefined;
+    if (typeof section.badge === 'function') {
+      return section.badge(badges);
+    }
+    return section.badge;
+  };
+
   const isDashboardActive = activeRouteName === 'Dashboard';
 
   const renderSidebarContent = () => (
@@ -860,11 +903,23 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
       <View style={[styles.brandHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         <View style={[styles.brandLeadingGroup, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={styles.brandIconBox}>
-            <Icon name="graduationCap" size={20} color="#FFFFFF" />
+            <Image
+              source={school?.logo_url ? { uri: school.logo_url } : require('../../../assets/logo.png')}
+              style={styles.brandLogoImage}
+              resizeMode="contain"
+            />
           </View>
           <View style={[styles.brandTextGroup, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-            <AppText variant="cardTitle" weight="bold" color="#8EA2C6" style={styles.brandTitle}>
-              {school?.name || (isRTL ? 'corbit school' : 'corbit school')}
+            <View style={[styles.brandTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <AppText variant="cardTitle" weight="bold" color="#FFFFFF" style={styles.brandTitleWhite}>
+                school
+              </AppText>
+              <AppText variant="cardTitle" weight="bold" color="#38BDF8" style={styles.brandTitleBlue}>
+                Bit
+              </AppText>
+            </View>
+            <AppText variant="caption" color="#8EA2C6" style={styles.brandSubtitle} numberOfLines={1}>
+              {userNameDisplay}
             </AppText>
           </View>
         </View>
@@ -881,29 +936,21 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
         )}
       </View>
 
-      {/* 2. Current User / Counselor Profile Card */}
+      {/* 2. Current User Profile Card */}
       <View style={styles.profileCard}>
         <View style={[styles.profileCardInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <View style={styles.avatarBoxSquare}>
-            <Image
-              source={school?.logo_url ? { uri: school.logo_url } : require('../../../assets/logo.png')}
-              style={styles.avatarLogoImage}
-              resizeMode="contain"
-            />
+          <View style={styles.avatarBoxBlue}>
+            <Icon name="clipboard" size={20} color="#FFFFFF" />
           </View>
           <View style={[styles.profileTextCol, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
             <AppText variant="captionBold" color="#FFFFFF" style={styles.profileNameText} numberOfLines={1}>
-              {user?.name || (isCounselor ? (isRTL ? 'سعد إبراهيم الناصر' : 'Saad Ibrahim Al-Nasser') : isTeacher ? (isRTL ? 'معلم' : 'Teacher') : (isRTL ? 'فهد عبدالعزيز السالم' : 'Fahad Abdulaziz Al-Salem'))}
+              {userNameDisplay}
             </AppText>
             <View style={[styles.rolePillRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <View style={[styles.roleBadgePill, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <Icon name="globe" size={10} color="#E2E8F0" />
+                <Icon name="clipboard" size={11} color="#FFFFFF" />
                 <AppText variant="caption" color="#FFFFFF" style={styles.roleBadgeText}>
-                  {isCounselor
-                    ? (isRTL ? 'المرشد الطلابي' : 'Student Counselor')
-                    : isTeacher
-                    ? (isRTL ? 'معلم' : 'Teacher')
-                    : (isRTL ? 'وكيل المدرسة' : 'School Vice Principal')}
+                  {userRoleDisplay}
                 </AppText>
               </View>
             </View>
@@ -952,6 +999,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
         {/* Collapsible Navigation Groups & Subitems */}
         {authorizedSections.map((section) => {
           const isExpanded = isSectionExpanded(section.id);
+          const sectionBadge = resolveSectionBadge(section);
 
           return (
             <View key={section.id} style={styles.sectionContainer}>
@@ -980,12 +1028,21 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
                   </AppText>
                 </View>
 
-                <Icon
-                  name={isExpanded ? 'chevronDown' : 'chevronRight'}
-                  style={!isExpanded ? { transform: [{ scaleX: isRTL ? -1 : 1 }] } : undefined}
-                  size={14}
-                  color="#8EA2C6"
-                />
+                <View style={[styles.sectionHeaderTrailing, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  {sectionBadge !== undefined && (
+                    <View style={styles.sectionBadgePill}>
+                      <AppText variant="caption" color="#CBD5E1" style={styles.sectionBadgeText}>
+                        {String(sectionBadge)}
+                      </AppText>
+                    </View>
+                  )}
+                  <Icon
+                    name={isExpanded ? 'chevronDown' : 'chevronRight'}
+                    style={!isExpanded ? { transform: [{ scaleX: isRTL ? -1 : 1 }] } : undefined}
+                    size={14}
+                    color="#8EA2C6"
+                  />
+                </View>
               </TouchableOpacity>
 
               {/* Collapsible Children Subitems */}
@@ -1049,28 +1106,39 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
         })}
       </ScrollView>
 
-      {/* 4. Bottom Actions: Language Toggle & Logout */}
+      {/* 4. Bottom Actions: Language Toggle, Theme Toggle & Logout */}
       <View style={[styles.sidebarFooter, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         <TouchableOpacity
           style={[styles.logoutBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
           onPress={handleLogout}
           accessibilityRole="button"
         >
-          <Icon name="logOut" size={14} color="#F87171" />
-          <AppText variant="captionBold" color="#F87171" style={styles.logoutText}>
+          <Icon name="logOut" size={14} color="#F43F5E" />
+          <AppText variant="captionBold" color="#F43F5E" style={styles.logoutText}>
             {isRTL ? 'خروج' : 'Logout'}
           </AppText>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.langBtn}
-          onPress={toggleLanguage}
-          accessibilityRole="button"
-        >
-          <AppText variant="captionBold" color="#FFFFFF">
-            {lang === 'ar' ? 'EN' : 'العربية'}
-          </AppText>
-        </TouchableOpacity>
+        <View style={[styles.footerUtilsGroup, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <TouchableOpacity
+            style={styles.langBtn}
+            onPress={toggleLanguage}
+            accessibilityRole="button"
+          >
+            <AppText variant="captionBold" color="#CBD5E1" style={styles.langBtnText}>
+              {lang === 'ar' ? 'EN' : 'العربية'}
+            </AppText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.themeBtn}
+            onPress={toggleTheme}
+            accessibilityRole="button"
+            accessibilityLabel="Toggle Theme"
+          >
+            <Icon name={isDark ? 'sun' : 'moon'} size={15} color="#CBD5E1" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -1220,7 +1288,7 @@ const styles = StyleSheet.create({
   darkMasterWrapper: {
     backgroundColor: '#07132B',
   },
-ltrLayout: {
+  ltrLayout: {
     flexDirection: 'row',
   },
   desktopSidebarWrapper: {
@@ -1228,13 +1296,6 @@ ltrLayout: {
     backgroundColor: '#071228',
     height: '100%',
   },
-  /**
-   * Sidebar border on the "content" side.
-   * Physical left/right are specified explicitly because React Native
-   * `borderLeftWidth`/`borderRightWidth` are NOT flipped by I18nManager.
-   * In RTL Arabic: sidebar is on physical RIGHT → border on LEFT (toward content).
-   * In LTR English: sidebar is on physical LEFT → border on RIGHT (toward content).
-   */
   sidebarBorderLeft: {
     borderLeftWidth: 1,
     borderLeftColor: '#13254C',
@@ -1274,17 +1335,31 @@ ltrLayout: {
     borderColor: '#1D3B7A',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  brandLogoImage: {
+    width: 28,
+    height: 28,
   },
   brandTextGroup: {
     flex: 1,
   },
-  brandTitle: {
-    fontSize: 15,
-    letterSpacing: 0.5,
-    fontFamily: ibmPlexArabicFontFamily.medium,
+  brandTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
   },
-  brandSub: {
+  brandTitleWhite: {
+    fontSize: 16,
+    fontFamily: ibmPlexArabicFontFamily.bold,
+  },
+  brandTitleBlue: {
+    fontSize: 16,
+    fontFamily: ibmPlexArabicFontFamily.bold,
+  },
+  brandSubtitle: {
     fontSize: 11,
+    marginTop: 1,
   },
   drawerCloseBtn: {
     width: 36,
@@ -1295,31 +1370,25 @@ ltrLayout: {
     justifyContent: 'center',
   },
   profileCard: {
-    backgroundColor: '#0E1F3D',
+    backgroundColor: '#0A192F',
     borderRadius: 12,
     padding: 12,
     marginVertical: 12,
     borderWidth: 1,
-    borderColor: '#1A325C',
+    borderColor: '#152C53',
   },
   profileCardInner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-  avatarBoxSquare: {
-    width: 40,
-    height: 40,
+  avatarBoxBlue: {
+    width: 38,
+    height: 38,
     borderRadius: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1D4ED8',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 3,
-    overflow: 'hidden',
-  },
-  avatarLogoImage: {
-    width: '100%',
-    height: '100%',
   },
   profileTextCol: {
     flex: 1,
@@ -1333,18 +1402,18 @@ ltrLayout: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginTop: 2,
+    marginTop: 3,
   },
   roleBadgePill: {
-    backgroundColor: '#132B54',
+    backgroundColor: '#1D4ED8',
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 2.5,
     borderRadius: 6,
     alignItems: 'center',
     gap: 4,
   },
   roleBadgeText: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontFamily: ibmPlexArabicFontFamily.medium,
   },
   navScrollView: {
@@ -1388,9 +1457,6 @@ ltrLayout: {
     minHeight: 44,
     borderRadius: 8,
   },
-  sectionHeaderBtnActive: {
-    backgroundColor: 'rgba(56, 189, 248, 0.08)',
-  },
   sectionHeaderLeading: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1401,6 +1467,27 @@ ltrLayout: {
     fontSize: 14.5,
     fontFamily: ibmPlexArabicFontFamily.bold,
     fontWeight: 'bold',
+  },
+  sectionHeaderTrailing: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sectionBadgePill: {
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  sectionBadgeText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#CBD5E1',
   },
   subitemsList: {
     paddingVertical: 2,
@@ -1452,7 +1539,7 @@ ltrLayout: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 10,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#132147',
   },
@@ -1460,22 +1547,45 @@ ltrLayout: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    minHeight: 40,
+    backgroundColor: '#2D0B2E',
+    borderWidth: 1,
+    borderColor: '#831843',
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    minHeight: 36,
   },
   logoutText: {
-    fontSize: 13.5,
+    fontSize: 12.5,
     fontFamily: ibmPlexArabicFontFamily.medium,
   },
+  footerUtilsGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   langBtn: {
-    backgroundColor: '#1E293B',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 6,
+    backgroundColor: '#112240',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#334155',
-    minHeight: 38,
+    borderColor: '#1E3A6E',
+    minHeight: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  langBtnText: {
+    fontSize: 12,
+    fontFamily: ibmPlexArabicFontFamily.bold,
+  },
+  themeBtn: {
+    backgroundColor: '#112240',
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#1E3A6E',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1528,7 +1638,6 @@ ltrLayout: {
   notifBadge: {
     position: 'absolute',
     top: -2,
-    // RTL-aware: badge position set inline via style prop
     backgroundColor: '#E11D48',
     borderRadius: 9,
     minWidth: 18,
