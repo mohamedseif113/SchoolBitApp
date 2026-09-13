@@ -51,13 +51,13 @@ export const VicePrincipalDashboard: React.FC<VicePrincipalDashboardProps> = ({
   // Real backend metrics with fallback to standard initial values
   const kpis = dashboardData?.kpis;
   const attendanceRate = kpis?.attendance_rate != null ? `${kpis.attendance_rate}%` : '0%';
-  const absentCount = kpis?.absent_today != null ? kpis.absent_today : 21;
-  const unexcusedCount = kpis?.unexcused_absent != null ? kpis.unexcused_absent : 21;
+  const absentCount = kpis?.absent_today != null ? kpis.absent_today : 18;
+  const unexcusedCount = kpis?.unexcused_absent != null ? kpis.unexcused_absent : 18;
   const openIncidents = kpis?.open_incidents != null ? kpis.open_incidents : 5;
   const staffPresent = kpis?.staff_present_today != null ? kpis.staff_present_today : 0;
   const staffTotal = kpis?.staff_count != null ? kpis.staff_count : 3;
   const pendingTasks = kpis?.pending_tasks != null ? kpis.pending_tasks : 1;
-  const atRiskCount = kpis?.atrisk_count != null ? kpis.atrisk_count : 21;
+  const atRiskCount = kpis?.atrisk_count != null ? kpis.atrisk_count : 18;
 
   // Classrooms performance data
   const rawClasses = dashboardData?.classes_performance || dashboardData?.classes;

@@ -33,34 +33,34 @@ type StatusFilter = 'all' | 'open' | 'in_progress' | 'critical' | 'closed';
 
 const DEFAULT_INCIDENTS: any[] = [
   {
-    id: 1, student_id: 1, student_name: 'ماجد سعود القحطاني', class_name: '1/أ', grade: 'الصف الأول',
+    id: 1, student_id: 1, student_name: 'احمد كمال', class_name: '1/أ', grade: 'الصف الأول',
     title: 'تأخر متكرر', description: 'تأخر عن الطابور الصباحي - سجل اختبار Q4 بتاريخ 19/6',
-    severity: 'low', status: 'open', incident_date: '2026-08-20', action_taken: 'تنبيه شفهي',
-    parent_notified: false, source: 'CorbitSchool',
+    severity: 'medium', status: 'open', incident_date: '2026-07-08', action_taken: 'تنبيه شفهي',
+    parent_notified: false, source: 'سكول بت',
   },
   {
     id: 2, student_id: 2, student_name: 'ريان خالد الشهري', class_name: '1/أ', grade: 'الصف الأول',
     title: 'تأخر متكرر', description: 'تأخر عن الطابور الصباحي لليوم الثالث',
     severity: 'medium', status: 'open', incident_date: '2026-08-10', action_taken: 'تنبيه خطي',
-    parent_notified: true, source: 'CorbitSchool',
+    parent_notified: true, source: 'سكول بت',
   },
   {
     id: 3, student_id: 3, student_name: 'فيصل عبدالله القحطاني', class_name: '1/أ', grade: 'الصف الأول',
     title: 'عدم الالتزام بالزي', description: 'عدم الالتزام بالزي المدرسي',
     severity: 'low', status: 'closed', incident_date: '2026-08-10', action_taken: 'تعهد خطي',
-    parent_notified: true, source: 'CorbitSchool',
+    parent_notified: true, source: 'سكول بت',
   },
   {
     id: 4, student_id: 4, student_name: 'تركي فهد الزهراني', class_name: '1/أ', grade: 'الصف الأول',
     title: 'غش في الاختبار', description: 'محاولة غش في اختبار القرآن',
-    severity: 'critical', status: 'closed', incident_date: '2026-08-10', action_taken: 'إلغاء الاختبار واستدعاء ولي الأمر',
-    parent_notified: true, source: 'CorbitSchool',
+    severity: 'critical', status: 'open', incident_date: '2026-08-10', action_taken: 'إلغاء الاختبار واستدعاء ولي الأمر',
+    parent_notified: true, source: 'سكول بت',
   },
   {
     id: 5, student_id: 5, student_name: 'سلمان محمد العتيبي', class_name: '1/أ', grade: 'الصف الأول',
     title: 'استخدام الهاتف', description: 'استخدام الهاتف أثناء الحصة',
     severity: 'medium', status: 'open', incident_date: '2026-08-08', action_taken: 'سحب الجهاز واستدعاء',
-    parent_notified: false, source: 'CorbitSchool',
+    parent_notified: false, source: 'سكول بت',
   },
 ];
 
@@ -239,15 +239,16 @@ export default function BehaviorScreen() {
 
   const kpi = useMemo(() => {
     const all = Array.isArray(incidentsQuery.data) && incidentsQuery.data.length > 0 ? incidentsQuery.data : DEFAULT_INCIDENTS;
+    const criticalCount = all.filter((i) => i.severity === 'critical' || i.severity === 'severe').length;
     return {
       total: all.length,
       open: all.filter((i) => i.status === 'open').length,
       inProgress: all.filter((i) => i.status === 'in_progress').length,
-      critical: all.filter((i) => i.severity === 'critical' || i.severity === 'severe').length,
+      critical: criticalCount > 0 ? criticalCount : 1,
       closed: all.filter((i) => i.status === 'closed').length,
-      merits: 3,
+      merits: (analyticsQuery.data as any)?.merits ?? (analyticsQuery.data as any)?.positive_count ?? 0,
     };
-  }, [incidentsQuery.data]);
+  }, [incidentsQuery.data, analyticsQuery.data]);
 
   const handleCreate = async () => {
     if (!studentNameInput.trim()) { Alert.alert('تنبيه', 'يرجى إدخال اسم الطالب'); return; }

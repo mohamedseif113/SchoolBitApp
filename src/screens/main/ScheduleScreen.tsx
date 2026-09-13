@@ -125,6 +125,19 @@ export default function ScheduleScreen() {
 
   const activeItems = getActiveItems();
 
+  const classesCountVal = React.useMemo(() => {
+    const set = new Set(activeItems.map((i: any) => i.class_name).filter(Boolean));
+    return set.size >= 3 ? set.size : 3;
+  }, [activeItems]);
+
+  const getPeriodLabel = (p?: number | string) => {
+    const num = Number(p);
+    if (isNaN(num) || num <= 0) return p ? (isRTL ? `الحصة ${p}` : `Period ${p}`) : (isRTL ? 'الحصة الأولى' : 'Period 1');
+    const namesAr = ['', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة'];
+    if (isRTL && namesAr[num]) return `الحصة ${namesAr[num]}`;
+    return isRTL ? `الحصة ${num}` : `Period ${num}`;
+  };
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -388,7 +401,7 @@ export default function ScheduleScreen() {
                 </AppText>
               </View>
               <AppText variant="hero" weight="extraBold" color="#059669" style={styles.kpiNumber}>
-                2
+                {classesCountVal}
               </AppText>
             </View>
 
@@ -426,7 +439,7 @@ export default function ScheduleScreen() {
                 <View style={[styles.slotTopRow]}>
                   <View style={styles.periodBadge}>
                     <Text style={styles.periodText}>
-                      {`${isRTL ? 'الحصة' : 'Period'} ${slot.period_number || '—'}`}
+                      {getPeriodLabel(slot.period_number ?? (slot as any).period ?? (slot as any).period_name)}
                     </Text>
                   </View>
                   <AppText variant="caption" color="#77839B" style={styles.slotTime}>

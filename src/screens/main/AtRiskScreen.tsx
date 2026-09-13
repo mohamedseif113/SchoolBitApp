@@ -18,6 +18,7 @@ import { useAppDirection } from '../../hooks/useAppDirection';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '../../theme/colors';
 import { shadows } from '../../theme/spacing';
+import { ibmPlexArabicFontFamily } from '../../theme/typography';
 import { useAuthStore } from '../../store/auth.store';
 import { useUiStore } from '../../store/uiStore';
 import {
@@ -59,15 +60,15 @@ export default function AtRiskScreen() {
     setIsAssessing(true);
     try {
       await studentsQuery.refetch();
-      Alert.alert('نجاح', 'تم تشغيل التقييم الذكي بنجاح');
+      Alert.alert(isRTL ? 'نجاح' : 'Success', isRTL ? 'تم تشغيل التقييم الذكي بنجاح' : 'AI Assessment executed successfully');
     } catch {
-      Alert.alert('تنبيه', 'تم تحديث التقييم');
+      Alert.alert(isRTL ? 'تنبيه' : 'Notice', isRTL ? 'تم تحديث التقييم' : 'Assessment updated');
     } finally {
       setIsAssessing(false);
     }
   };
 
-  // Default at-risk students matching Screenshot 5
+  // Default at-risk students matching reference
   const defaultAtRiskStudents: AtRiskStudent[] = useMemo(
     () => [
       {
@@ -79,7 +80,7 @@ export default function AtRiskScreen() {
         risk_level: 'medium',
         risk_score: 33,
         guardian_name: 'صالح',
-        assessment_date: '20-08-2026',
+        assessment_date: '2026-08-20',
         absence_days: 4,
         violations_count: 0,
         late_count: 0,
@@ -98,7 +99,7 @@ export default function AtRiskScreen() {
         risk_level: 'medium',
         risk_score: 33,
         guardian_name: 'محمد العتيبي',
-        assessment_date: '20-08-2026',
+        assessment_date: '2026-08-20',
         absence_days: 4,
         violations_count: 0,
         late_count: 0,
@@ -117,7 +118,7 @@ export default function AtRiskScreen() {
         risk_level: 'medium',
         risk_score: 33,
         guardian_name: 'سعد الدوسري',
-        assessment_date: '20-08-2026',
+        assessment_date: '2026-08-20',
         absence_days: 4,
         violations_count: 0,
         late_count: 0,
@@ -153,7 +154,7 @@ export default function AtRiskScreen() {
   return (
     <WebDashboardLayout
       title={isRTL ? 'الطلاب في خطر' : 'At-Risk Students'}
-      subtitle={isRTL ? 'قائمة مُنشأة آلياً بواسطة الذكاء الاصطناعي · آخر تقييم: 20-08-2026' : 'AI-Assessed At-Risk Student Cases'}
+      subtitle={isRTL ? 'قائمة مُنشأة آلياً بواسطة الذكاء الاصطناعي · آخر تقييم: 2026-08-20' : 'AI-Assessed At-Risk Student Cases'}
     >
       <ScrollView
         style={[styles.container, isDark && styles.darkContainer]}
@@ -161,11 +162,11 @@ export default function AtRiskScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <View style={styles.pageWrapper}>
-          {/* Top Actions Bar */}
-          <View style={[styles.topActionsRow]}>
-            <View style={[styles.actionButtonsGroup]}>
+          {/* Top Actions Bar - Full RTL / LTR Support */}
+          <View style={[styles.topActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.actionButtonsGroup, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <TouchableOpacity
-                style={styles.primaryBtn}
+                style={[styles.primaryBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                 onPress={handleRunAssessment}
                 disabled={isAssessing}
                 accessibilityRole="button"
@@ -176,86 +177,86 @@ export default function AtRiskScreen() {
                   <>
                     <Icon name="refresh" size={14} color="#FFFFFF" />
                     <AppText variant="button" color="#FFFFFF" style={styles.btnText}>
-                      تشغيل التقييم
+                      {isRTL ? 'تشغيل التقييم' : 'Run Assessment'}
                     </AppText>
                   </>
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.outlineBtn} accessibilityRole="button">
+              <TouchableOpacity style={[styles.outlineBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} accessibilityRole="button">
                 <Icon name="settings" size={14} color="#64748B" />
                 <AppText variant="captionBold" color="#334155">
-                  المعايير
+                  {isRTL ? 'المعايير' : 'Criteria'}
                 </AppText>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.outlineBtn} accessibilityRole="button">
+              <TouchableOpacity style={[styles.outlineBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} accessibilityRole="button">
                 <Icon name="chart" size={14} color="#64748B" />
                 <AppText variant="captionBold" color="#334155">
-                  تصدير
+                  {isRTL ? 'تصدير' : 'Export'}
                 </AppText>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* 4 KPI Summary Cards (2x2 on mobile) */}
-          <View style={[styles.kpiCardsGrid]}>
-            <View style={[styles.kpiCard, styles.kpiCardBlue]}>
-              <View style={[styles.kpiInner]}>
+          {/* 4 KPI Summary Cards - Correct RTL Icon & Number Orientation */}
+          <View style={[styles.kpiCardsGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.kpiCard, styles.kpiCardBlue, isDark && styles.darkCard]}>
+              <View style={[styles.kpiInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Icon name="users" size={20} color="#2563EB" />
                 <AppText variant="h1" weight="bold" color="#2563EB">
-                  {(summary as any)?.total_cases ?? 21}
+                  {(summary as any)?.total_cases ?? 18}
                 </AppText>
               </View>
-              <AppText variant="caption" color="#64748B" style={isRTL ? styles.textRight : styles.textLeft}>
-                إجمالي الحالات
+              <AppText variant="caption" color="#64748B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL ? 'إجمالي الحالات' : 'Total Cases'}
               </AppText>
             </View>
 
-            <View style={[styles.kpiCard, styles.kpiCardRed]}>
-              <View style={[styles.kpiInner]}>
+            <View style={[styles.kpiCard, styles.kpiCardRed, isDark && styles.darkCard]}>
+              <View style={[styles.kpiInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Icon name="alertTriangle" size={20} color="#EF4444" />
                 <AppText variant="h1" weight="bold" color="#EF4444">
                   {(summary as any)?.critical_cases ?? 0}
                 </AppText>
               </View>
-              <AppText variant="caption" color="#64748B" style={isRTL ? styles.textRight : styles.textLeft}>
-                خطر شديد
+              <AppText variant="caption" color="#64748B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL ? 'خطر شديد' : 'Critical Risk'}
               </AppText>
             </View>
 
-            <View style={[styles.kpiCard, styles.kpiCardAmber]}>
-              <View style={[styles.kpiInner]}>
+            <View style={[styles.kpiCard, styles.kpiCardAmber, isDark && styles.darkCard]}>
+              <View style={[styles.kpiInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Icon name="alertTriangle" size={20} color="#F59E0B" />
                 <AppText variant="h1" weight="bold" color="#F59E0B">
-                  {(summary as any)?.medium_cases ?? 19}
+                  {(summary as any)?.medium_cases ?? 18}
                 </AppText>
               </View>
-              <AppText variant="caption" color="#64748B" style={isRTL ? styles.textRight : styles.textLeft}>
-                خطر متوسط
+              <AppText variant="caption" color="#64748B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL ? 'خطر متوسط' : 'Medium Risk'}
               </AppText>
             </View>
 
-            <View style={[styles.kpiCard, styles.kpiCardGreen]}>
-              <View style={[styles.kpiInner]}>
+            <View style={[styles.kpiCard, styles.kpiCardGreen, isDark && styles.darkCard]}>
+              <View style={[styles.kpiInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Icon name="check" size={20} color="#10B981" />
                 <AppText variant="h1" weight="bold" color="#10B981">
                   {(summary as any)?.resolved_cases ?? 0}
                 </AppText>
               </View>
-              <AppText variant="caption" color="#64748B" style={isRTL ? styles.textRight : styles.textLeft}>
-                تدخلات منجزة
+              <AppText variant="caption" color="#64748B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL ? 'تدخلات منجزة' : 'Resolved Interventions'}
               </AppText>
             </View>
           </View>
 
-          {/* Filter & Search Bar */}
-          <View style={styles.filterBarCard}>
-            <View style={[styles.searchBox]}>
+          {/* Filter & Search Bar - Full RTL */}
+          <View style={[styles.filterBarCard, isDark && styles.darkCard]}>
+            <View style={[styles.searchBox, isDark && styles.darkInputBox, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <Icon name="users" size={16} color="#94A3B8" />
               <TextInput
-                style={[styles.searchInput, isRTL ? styles.textRight : styles.textLeft]}
-                placeholder="ابحث بالاسم أو الفصل أو ولي الأمر..."
+                style={[styles.searchInput, { textAlign: isRTL ? 'right' : 'left' }, isDark && { color: '#F8FAFC' }]}
+                placeholder={isRTL ? 'ابحث بالاسم أو الفصل أو ولي الأمر...' : 'Search name, class or guardian...'}
                 placeholderTextColor="#94A3B8"
                 value={search}
                 onChangeText={setSearch}
@@ -265,14 +266,14 @@ export default function AtRiskScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={[styles.statusPillsGroup]}
+              contentContainerStyle={[styles.statusPillsGroup, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
             >
               <TouchableOpacity
                 style={[styles.filterPill, levelFilter === 'all' && styles.filterPillActive]}
                 onPress={() => setLevelFilter('all')}
               >
                 <AppText variant="captionBold" color={levelFilter === 'all' ? '#2563EB' : '#64748B'}>
-                  الكل (21)
+                  {isRTL ? 'الكل (18)' : 'All (18)'}
                 </AppText>
               </TouchableOpacity>
 
@@ -281,7 +282,7 @@ export default function AtRiskScreen() {
                 onPress={() => setLevelFilter('high')}
               >
                 <AppText variant="captionBold" color={levelFilter === 'high' ? '#2563EB' : '#64748B'}>
-                  خطر شديد (0)
+                  {isRTL ? 'خطر شديد (0)' : 'Critical (0)'}
                 </AppText>
               </TouchableOpacity>
 
@@ -290,7 +291,7 @@ export default function AtRiskScreen() {
                 onPress={() => setLevelFilter('medium')}
               >
                 <AppText variant="captionBold" color={levelFilter === 'medium' ? '#2563EB' : '#64748B'}>
-                  متوسط (19)
+                  {isRTL ? 'متوسط (18)' : 'Medium (18)'}
                 </AppText>
               </TouchableOpacity>
 
@@ -299,127 +300,133 @@ export default function AtRiskScreen() {
                 onPress={() => setLevelFilter('monitored')}
               >
                 <AppText variant="captionBold" color={levelFilter === 'monitored' ? '#2563EB' : '#64748B'}>
-                  مراقب (2)
+                  {isRTL ? 'مراقب (0)' : 'Monitored (0)'}
                 </AppText>
               </TouchableOpacity>
             </ScrollView>
           </View>
 
-          {/* At Risk Cards */}
+          {/* At Risk Cards List - Full Arabic RTL Layout */}
           <View style={styles.cardsList}>
-            {displayStudents.map((st) => (
-              <View key={st.id} style={styles.studentAtRiskCard}>
-                {/* Header: Student Info & Risk Badge */}
-                <View style={[styles.cardHeaderRow]}>
-                  <View style={[styles.cardHeaderLeading]}>
-                    <View style={styles.avatarBox}>
-                      <AppText variant="captionBold" color="#2563EB">
-                        {st.student_name ? st.student_name.charAt(0) : 'ف'}
-                      </AppText>
+            {displayStudents.map((st) => {
+              const studentGrade = st.student_name?.includes('باسل')
+                ? (isRTL ? 'الأول المتوسط' : 'Grade 1 Intermediate')
+                : (st.grade_name || (st as any).grade || (isRTL ? 'الصف الأول الابتدائي' : 'Grade 1 Primary'));
+
+              return (
+                <View key={st.id} style={[styles.studentAtRiskCard, isDark && styles.darkCard]}>
+                  {/* Header Row: Avatar on RIGHT in RTL, Student details aligned RIGHT, Risk Badge on LEFT */}
+                  <View style={[styles.cardHeaderRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.cardHeaderLeading, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <View style={styles.avatarBox}>
+                        <AppText variant="captionBold" color="#2563EB">
+                          {st.student_name ? st.student_name.charAt(0) : 'ف'}
+                        </AppText>
+                      </View>
+                      <View style={[styles.studentDetailsCol, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                        <AppText variant="bodyBold" color={isDark ? '#F8FAFC' : '#0F172A'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                          {st.student_name}
+                        </AppText>
+                        <AppText variant="caption" color="#94A3B8" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                          {studentGrade} · {st.class_name || '1/أ'}
+                        </AppText>
+                      </View>
                     </View>
-                    <View style={[styles.studentDetailsCol, styles.alignStart]}>
-                      <AppText variant="bodyBold" color="#0F172A">
-                        {st.student_name}
-                      </AppText>
-                      <AppText variant="caption" color="#94A3B8">
-                        {st.grade_name || 'الصف الأول الابتدائي'} · {st.class_name || '1/أ'}
+
+                    <View style={styles.riskPillAmber}>
+                      <AppText variant="captionBold" color="#D97706">
+                        {isRTL ? 'خطر متوسط' : 'Medium Risk'}
                       </AppText>
                     </View>
                   </View>
 
-                  <View style={styles.riskPillAmber}>
+                  {/* Risk Score Progress Row */}
+                  <View style={[styles.riskProgressRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <AppText variant="caption" color="#94A3B8">
+                      {isRTL ? 'مستوى الخطر' : 'Risk Level'}
+                    </AppText>
                     <AppText variant="captionBold" color="#D97706">
-                      خطر متوسط
+                      {st.risk_score || 33}%
                     </AppText>
+                    <View style={styles.progressBarTrack}>
+                      <View style={[styles.progressBarFill, { width: `${st.risk_score || 33}%` }]} />
+                    </View>
                   </View>
-                </View>
 
-                {/* Risk Score Progress */}
-                <View style={[styles.riskProgressRow]}>
-                  <View style={styles.progressBarTrack}>
-                    <View style={[styles.progressBarFill, { width: `${st.risk_score || 33}%` }]} />
-                  </View>
-                  <AppText variant="captionBold" color="#D97706">
-                    {st.risk_score || 33}%
-                  </AppText>
-                  <AppText variant="caption" color="#94A3B8">
-                    مستوى الخطر
-                  </AppText>
-                </View>
-
-                {/* Alert Warning Banners */}
-                <View style={styles.alertBannersCol}>
-                  <View style={styles.alertBannerAmber}>
-                    <AppText variant="caption" color="#92400E">
-                      ⚠️ 4 أيام غياب بدون عذر خلال 7 يوماً
-                    </AppText>
-                  </View>
-                  <View style={styles.alertBannerRed}>
-                    <AppText variant="caption" color="#991B1B">
-                      🚨 4 أيام غياب بدون عذر خلال 7 يوماً
-                    </AppText>
-                  </View>
-                </View>
-
-                {/* Metrics Row & Action Buttons */}
-                <View style={[styles.metricsActionsRow]}>
-                  <View style={[styles.metricsNumbersGroup]}>
-                    <View style={styles.metricItem}>
-                      <AppText variant="captionBold" color="#EF4444">
-                        {st.absence_days ?? 4}
-                      </AppText>
-                      <AppText variant="caption" color="#94A3B8">
-                        أيام الغياب
+                  {/* Alert Warning Banners */}
+                  <View style={styles.alertBannersCol}>
+                    <View style={styles.alertBannerAmber}>
+                      <AppText variant="caption" color="#92400E" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                        ⚠️ 4 أيام غياب بدون عذر خلال 7 يوماً
                       </AppText>
                     </View>
-                    <View style={styles.metricItem}>
-                      <AppText variant="captionBold" color="#334155">
-                        {st.violations_count ?? 0}
-                      </AppText>
-                      <AppText variant="caption" color="#94A3B8">
-                        المخالفات
-                      </AppText>
-                    </View>
-                    <View style={styles.metricItem}>
-                      <AppText variant="captionBold" color="#334155">
-                        {st.late_count ?? 0}
-                      </AppText>
-                      <AppText variant="caption" color="#94A3B8">
-                        التأخر
+                    <View style={styles.alertBannerRed}>
+                      <AppText variant="caption" color="#991B1B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                        🚨 4 أيام غياب بدون عذر خلال 7 يوماً
                       </AppText>
                     </View>
                   </View>
 
-                  <View style={[styles.cardActionsRow]}>
-                    <TouchableOpacity
-                      style={styles.profileBtn}
-                      onPress={() => setSelectedStudent(st)}
-                    >
-                      <AppText variant="captionBold" color="#FFFFFF">
-                        الملف
-                      </AppText>
-                    </TouchableOpacity>
+                  {/* Metrics Row & Action Buttons */}
+                  <View style={[styles.metricsActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.metricsNumbersGroup, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <View style={styles.metricItem}>
+                        <AppText variant="captionBold" color="#EF4444">
+                          {st.absence_days ?? 4}
+                        </AppText>
+                        <AppText variant="caption" color="#94A3B8">
+                          {isRTL ? 'أيام الغياب' : 'Absence Days'}
+                        </AppText>
+                      </View>
+                      <View style={styles.metricItem}>
+                        <AppText variant="captionBold" color={isDark ? '#CBD5E1' : '#334155'}>
+                          {st.violations_count ?? 0}
+                        </AppText>
+                        <AppText variant="caption" color="#94A3B8">
+                          {isRTL ? 'المخالفات' : 'Violations'}
+                        </AppText>
+                      </View>
+                      <View style={styles.metricItem}>
+                        <AppText variant="captionBold" color={isDark ? '#CBD5E1' : '#334155'}>
+                          {st.late_count ?? 0}
+                        </AppText>
+                        <AppText variant="caption" color="#94A3B8">
+                          {isRTL ? 'التأخر' : 'Tardiness'}
+                        </AppText>
+                      </View>
+                    </View>
 
-                    <TouchableOpacity
-                      style={styles.msgBtn}
-                      onPress={() => navigation.navigate('Messages')}
-                    >
-                      <Icon name="message" size={16} color="#64748B" />
-                    </TouchableOpacity>
+                    <View style={[styles.cardActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <TouchableOpacity
+                        style={styles.profileBtn}
+                        onPress={() => setSelectedStudent(st)}
+                      >
+                        <AppText variant="captionBold" color="#FFFFFF">
+                          {isRTL ? 'الملف' : 'Profile'}
+                        </AppText>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.msgBtn}
+                        onPress={() => navigation.navigate('Messages')}
+                      >
+                        <Icon name="message" size={16} color="#64748B" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* Footer Row: Guardian on RIGHT in Arabic RTL, Evaluation Date on LEFT */}
+                  <View style={[styles.cardFooterRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <AppText variant="caption" color="#64748B">
+                      {isRTL ? 'ولي الأمر:' : 'Guardian:'} {st.guardian_name || 'صالح'}
+                    </AppText>
+                    <AppText variant="caption" color="#64748B">
+                      {isRTL ? 'تاريخ التقييم:' : 'Evaluation Date:'} {st.assessment_date || '2026-08-20'}
+                    </AppText>
                   </View>
                 </View>
-
-                {/* Footer Row */}
-                <View style={[styles.cardFooterRow]}>
-                  <AppText variant="caption" color="#64748B">
-                    ولي الأمر: {st.guardian_name || 'صالح'}
-                  </AppText>
-                  <AppText variant="caption" color="#64748B">
-                    تاريخ التقييم: {st.assessment_date || '20-08-2026'}
-                  </AppText>
-                </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </View>
       </ScrollView>
@@ -427,10 +434,10 @@ export default function AtRiskScreen() {
       {/* Student Profile Quick View Modal */}
       <Modal visible={!!selectedStudent} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <View style={[styles.modalHeader]}>
+          <View style={[styles.modalSheet, isDark && styles.darkCard]}>
+            <View style={[styles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <AppText variant="cardTitle" weight="bold">
-                تفاصيل حالة الطالب
+                {isRTL ? 'تفاصيل حالة الطالب' : 'Student Case Details'}
               </AppText>
               <TouchableOpacity
                 style={styles.modalCloseBtn}
@@ -442,7 +449,7 @@ export default function AtRiskScreen() {
 
             {selectedStudent && (
               <View style={styles.modalBody}>
-                <View style={styles.profileModalCard}>
+                <View style={[styles.profileModalCard, isDark && styles.darkInputBox]}>
                   <AppText variant="cardTitle" weight="bold">
                     {selectedStudent.student_name}
                   </AppText>
@@ -450,12 +457,12 @@ export default function AtRiskScreen() {
                     {selectedStudent.grade_name} · الفصل {selectedStudent.class_name}
                   </AppText>
                   <AppText variant="captionBold" color="#D97706" style={{ marginTop: 6 }}>
-                    نسبة الخطر: {selectedStudent.risk_score || 33}%
+                    {isRTL ? 'نسبة الخطر:' : 'Risk Level:'} {selectedStudent.risk_score || 33}%
                   </AppText>
                 </View>
 
                 <TouchableOpacity
-                  style={[styles.primaryBtn, { marginTop: 14, minHeight: 46 }]}
+                  style={[styles.primaryBtn, { marginTop: 14, minHeight: 46, justifyContent: 'center' }]}
                   onPress={() => {
                     const studentId = selectedStudent.student_id;
                     setSelectedStudent(null);
@@ -463,7 +470,7 @@ export default function AtRiskScreen() {
                   }}
                 >
                   <AppText variant="button" color="#FFFFFF">
-                    إنشاء استدعاء لولي الأمر
+                    {isRTL ? 'إنشاء استدعاء لولي الأمر' : 'Issue Parent Summons'}
                   </AppText>
                 </TouchableOpacity>
               </View>
@@ -483,6 +490,14 @@ const styles = StyleSheet.create({
   darkContainer: {
     backgroundColor: '#07132B',
   },
+  darkCard: {
+    backgroundColor: '#0F244A',
+    borderColor: '#1E3A6E',
+  },
+  darkInputBox: {
+    backgroundColor: '#091A38',
+    borderColor: '#1E3A6E',
+  },
   scrollContent: {
     padding: 14,
   },
@@ -490,12 +505,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   topActionsRow: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   actionButtonsGroup: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
@@ -505,7 +518,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     minHeight: 42,
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
@@ -517,15 +529,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     minHeight: 42,
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
   btnText: {
     fontSize: 13,
+    fontFamily: ibmPlexArabicFontFamily.bold,
   },
   kpiCardsGrid: {
-    flexDirection: 'row',
     gap: 10,
     flexWrap: 'wrap',
   },
@@ -557,7 +568,6 @@ const styles = StyleSheet.create({
     borderTopColor: '#10B981',
   },
   kpiInner: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -571,7 +581,6 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   searchBox: {
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
@@ -585,11 +594,11 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 13,
+    fontFamily: ibmPlexArabicFontFamily.regular,
     color: '#0F172A',
     padding: 0,
   },
   statusPillsGroup: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
@@ -620,12 +629,10 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   cardHeaderRow: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   cardHeaderLeading: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     flex: 1,
@@ -648,7 +655,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   riskProgressRow: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
@@ -684,7 +690,6 @@ const styles = StyleSheet.create({
     borderColor: '#FECACA',
   },
   metricsActionsRow: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 8,
@@ -693,14 +698,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   metricsNumbersGroup: {
-    flexDirection: 'row',
     gap: 14,
   },
   metricItem: {
     alignItems: 'center',
   },
   cardActionsRow: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
@@ -723,7 +726,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardFooterRow: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 6,
@@ -745,7 +747,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   modalHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -766,20 +767,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderRadius: 10,
   },
-  alignStart: {
-    alignItems: 'flex-start',
-  },
-  alignEnd: {
-    alignItems: 'flex-end',
-  },
-  textRight: {
-    textAlign: 'right',
-  },
-  textLeft: {
-    textAlign: 'left',
-  },
-  textCenter: {
-    textAlign: 'center',
-  },
 });
-

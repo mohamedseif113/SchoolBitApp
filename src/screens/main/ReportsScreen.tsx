@@ -100,6 +100,17 @@ export default function ReportsScreen() {
     }
   };
 
+  const getCategoryLabel = (cat?: string) => {
+    if (!cat) return isRTL ? 'عام' : 'General';
+    const c = cat.toLowerCase();
+    if (c === 'staff') return isRTL ? 'الكادر التعليمي' : 'Staff';
+    if (c === 'behavior') return isRTL ? 'السلوك والانضباط' : 'Behavior';
+    if (c === 'attendance') return isRTL ? 'الحضور والغياب' : 'Attendance';
+    if (c === 'academic') return isRTL ? 'الأكاديمي' : 'Academic';
+    if (c === 'finance') return isRTL ? 'المالية' : 'Finance';
+    return cat;
+  };
+
   return (
     <SafeAreaView style={[styles.safeArea, isDark && styles.darkSafeArea]}>
       {/* Header */}
@@ -163,7 +174,7 @@ export default function ReportsScreen() {
                       {tmpl.name}
                     </AppText>
                     <View style={styles.catBadge}>
-                      <Text style={styles.catBadgeText}>{tmpl.category || (isRTL ? 'عام' : 'General')}</Text>
+                      <Text style={styles.catBadgeText}>{getCategoryLabel(tmpl.category)}</Text>
                     </View>
                   </View>
 

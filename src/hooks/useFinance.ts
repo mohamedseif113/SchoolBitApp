@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getBillingSummary,
   getInvoices,
+  getPaymentTransactions,
+  getFeeTypes,
   getPayLinks,
   createPayLink,
   deletePayLink,
@@ -25,6 +27,22 @@ export function useInvoices(params: Record<string, any> = {}) {
     queryKey: ['finance', 'invoices', params],
     queryFn: () => getInvoices(params),
     staleTime: 1000 * 60 * 3,
+  });
+}
+
+export function usePaymentTransactions(params: Record<string, any> = {}) {
+  return useQuery({
+    queryKey: ['finance', 'transactions', params],
+    queryFn: () => getPaymentTransactions(params),
+    staleTime: 1000 * 60 * 3,
+  });
+}
+
+export function useFeeTypes(params: Record<string, any> = {}) {
+  return useQuery({
+    queryKey: ['finance', 'feeTypes', params],
+    queryFn: () => getFeeTypes(params),
+    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -89,3 +107,4 @@ export function useSubmitBankTransfer() {
     },
   });
 }
+

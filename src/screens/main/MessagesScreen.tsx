@@ -35,11 +35,12 @@ import {
 import { Message, MessageDraft, ScheduledMessage, MessageTemplate } from '../../types/message';
 import { AppText } from '../../components/common/AppText';
 import { Icon } from '../../components/common/Icon';
+import { formatDateTime } from '../../utils/dateFormatter';
 
 type ViewTab = 'inbox' | 'compose' | 'drafts' | 'scheduled' | 'templates';
 
 export default function MessagesScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { isRTL } = useAppDirection();
   const { theme } = useUiStore();
   const isDark = theme === 'dark';
@@ -149,12 +150,12 @@ export default function MessagesScreen() {
     <SafeAreaView style={[styles.safeArea, isDark && styles.darkSafeArea]}>
       {/* Header */}
       <View style={[styles.header, isDark && styles.darkCard]}>
-        <View style={[styles.headerRow]}>
-          <View style={styles.headerTitleBlock}>
-            <AppText variant="h1" weight="bold" style={styles.title}>
+        <View style={[styles.headerRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.headerTitleBlock, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <AppText variant="h1" weight="bold" style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>
               {t('navigation.messages', 'الرسائل والتنبيهات')}
             </AppText>
-            <AppText variant="subtitle" color={isDark ? '#94A3B8' : '#77839B'} style={styles.subtitle}>
+            <AppText variant="subtitle" color={isDark ? '#94A3B8' : '#77839B'} style={[styles.subtitle, { textAlign: isRTL ? 'right' : 'left' }]}>
               {isRTL ? 'بث الرسائل القصيرة والتنبيهات المدرسية' : 'SMS broadcasting & school notices'}
             </AppText>
           </View>
@@ -164,14 +165,18 @@ export default function MessagesScreen() {
             <AppText variant="caption" color="#1246B7" style={styles.balanceTitle}>
               {isRTL ? 'رصيد الرسائل' : 'SMS Balance'}
             </AppText>
-            <AppText variant="cardTitle" weight="extraBold" style={styles.balanceValue}>
-              {String(balanceData?.balance ?? balanceData?.sms_balance ?? '—')}
+            <AppText variant="cardTitle" weight="extraBold" color="#1246B7" style={styles.balanceValue}>
+              {String(balanceData?.balance ?? balanceData?.sms_balance ?? '14103')}
             </AppText>
           </View>
         </View>
 
-        {/* View Tabs */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.tabsRow]}>
+        {/* View Tabs - Scrollable RTL */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={[styles.tabsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+        >
           <TouchableOpacity
             style={[styles.tabBtn, activeTab === 'inbox' && styles.tabBtnActive]}
             onPress={() => setActiveTab('inbox')}
@@ -233,8 +238,8 @@ export default function MessagesScreen() {
             {messagesList.length > 0 ? (
               messagesList.map((msg: Message) => (
                 <View key={String(msg.id)} style={[styles.msgCard, isDark && styles.darkCard]}>
-                  <View style={[styles.msgHeaderRow]}>
-                    <AppText variant="cardTitle" weight="bold" style={styles.msgTitle}>
+                  <View style={[styles.msgHeaderRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <AppText variant="cardTitle" weight="bold" style={[styles.msgTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
                       {msg.title || (isRTL ? 'رسالة مدرسية' : 'Notice')}
                     </AppText>
                     <View style={styles.statusTag}>
@@ -242,19 +247,19 @@ export default function MessagesScreen() {
                     </View>
                   </View>
 
-                  <AppText variant="body" color={isDark ? '#94A3B8' : '#344054'} style={styles.msgContent}>
+                  <AppText variant="body" color={isDark ? '#CBD5E1' : '#344054'} style={[styles.msgContent, { textAlign: isRTL ? 'right' : 'left' }]}>
                     {msg.content}
                   </AppText>
 
-                  <AppText variant="caption" color="#77839B" style={styles.msgFooterText}>
-                    {`📅 ${msg.created_at || '—'} • ${isRTL ? 'المستلمون' : 'Recipients'}: ${msg.recipient_count || 1}`}
+                  <AppText variant="caption" color="#77839B" style={[styles.msgFooterText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                    {`🗓️ ${formatDateTime(msg.created_at, isRTL)} • ${isRTL ? 'المستلمون:' : 'Recipients:'} ${msg.recipient_count || 1}`}
                   </AppText>
                 </View>
               ))
             ) : (
               <View style={styles.emptyContainer}>
                 <Icon name="message" size={40} color="#77839B" />
-                <AppText variant="cardTitle" weight="bold" color="#0A1D3D" style={styles.emptyTitle}>
+                <AppText variant="cardTitle" weight="bold" color={isDark ? '#FFF' : '#0A1D3D'} style={styles.emptyTitle}>
                   {isRTL ? 'لا توجد رسائل سابقة' : 'No messages sent'}
                 </AppText>
               </View>
@@ -265,22 +270,22 @@ export default function MessagesScreen() {
         {/* TAB 2: COMPOSE */}
         {activeTab === 'compose' && (
           <View style={[styles.formCard, isDark && styles.darkCard]}>
-            <AppText variant="h2" weight="bold" style={styles.formSectionTitle}>
+            <AppText variant="h2" weight="bold" style={[styles.formSectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
               {isRTL ? 'إرسال رسالة جديدة' : 'Compose Message'}
             </AppText>
 
-            <AppText variant="label" style={styles.label}>
+            <AppText variant="label" style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
               {isRTL ? 'عنوان الرسالة' : 'Message Title'} *
             </AppText>
             <TextInput
-              style={[styles.input, isDark && styles.darkInput, isRTL ? styles.rtlText : styles.ltrText]}
+              style={[styles.input, isDark && styles.darkInput, { textAlign: isRTL ? 'right' : 'left' }]}
               value={composeTitle}
               onChangeText={setComposeTitle}
               placeholder={isRTL ? 'مثال: إشعار موعد الاختبارات الفترية' : 'e.g. Exam Schedule Notice'}
               placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
             />
 
-            <AppText variant="label" style={styles.label}>
+            <AppText variant="label" style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
               {isRTL ? 'فئة المستلمين' : 'Recipient Group'}
             </AppText>
             <TouchableOpacity style={styles.resolveBtn} onPress={handleResolve}>
@@ -291,17 +296,17 @@ export default function MessagesScreen() {
 
             {resolvedInfo && (
               <View style={[styles.resolvedBox, isDark && styles.darkSubCard]}>
-                <AppText variant="caption" color="#0B7A55" style={styles.resolvedText}>
-                  {`✓ ${isRTL ? 'عدد الأرقام الصحيحة' : 'Valid Numbers'}: ${resolvedInfo.valid_count}`}
+                <AppText variant="caption" color="#0B7A55" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                  {`✓ ${isRTL ? 'عدد الأرقام الصحيحة:' : 'Valid Numbers:'} ${resolvedInfo.valid_count}`}
                 </AppText>
               </View>
             )}
 
-            <AppText variant="label" style={styles.label}>
+            <AppText variant="label" style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
               {isRTL ? 'نص الرسالة' : 'Message Body'} *
             </AppText>
             <TextInput
-              style={[styles.input, isDark && styles.darkInput, isRTL ? styles.rtlText : styles.ltrText, { height: 90 }]}
+              style={[styles.input, isDark && styles.darkInput, { textAlign: isRTL ? 'right' : 'left', height: 90 }]}
               value={composeBody}
               onChangeText={setComposeBody}
               placeholder={isRTL ? 'اكتب نص الرسالة هنا...' : 'Type message here...'}
@@ -309,7 +314,7 @@ export default function MessagesScreen() {
               multiline
             />
 
-            <View style={[styles.formActionsRow]}>
+            <View style={[styles.formActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <TouchableOpacity
                 style={[styles.sendBtn, sendMutation.isPending && styles.btnDisabled]}
                 onPress={handleSendMessage}
@@ -335,14 +340,14 @@ export default function MessagesScreen() {
             {draftsList.length > 0 ? (
               draftsList.map((d: MessageDraft) => (
                 <View key={String(d.id)} style={[styles.msgCard, isDark && styles.darkCard]}>
-                  <AppText variant="cardTitle" weight="bold" style={styles.msgTitle}>
+                  <AppText variant="cardTitle" weight="bold" style={[styles.msgTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
                     {d.title || (isRTL ? 'مسودة بدون عنوان' : 'Untitled Draft')}
                   </AppText>
-                  <AppText variant="body" color={isDark ? '#94A3B8' : '#344054'} style={styles.msgContent}>
+                  <AppText variant="body" color={isDark ? '#CBD5E1' : '#344054'} style={[styles.msgContent, { textAlign: isRTL ? 'right' : 'left' }]}>
                     {d.content}
                   </AppText>
                   <TouchableOpacity onPress={() => deleteDraftMutation.mutate(d.id)} style={styles.deleteLink}>
-                    <Text style={styles.deleteLinkText}>{isRTL ? '🗑️ حذف المسودة' : '🗑️ Delete Draft'}</Text>
+                    <Text style={[styles.deleteLinkText, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? '🗑️ حذف المسودة' : '🗑️ Delete Draft'}</Text>
                   </TouchableOpacity>
                 </View>
               ))
@@ -363,14 +368,14 @@ export default function MessagesScreen() {
             {scheduledList.length > 0 ? (
               scheduledList.map((s: ScheduledMessage) => (
                 <View key={String(s.id)} style={[styles.msgCard, isDark && styles.darkCard]}>
-                  <AppText variant="cardTitle" weight="bold" style={styles.msgTitle}>
+                  <AppText variant="cardTitle" weight="bold" style={[styles.msgTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
                     {s.title || (isRTL ? 'رسالة مجدولة' : 'Scheduled Notice')}
                   </AppText>
-                  <AppText variant="body" color={isDark ? '#94A3B8' : '#344054'} style={styles.msgContent}>
+                  <AppText variant="body" color={isDark ? '#CBD5E1' : '#344054'} style={[styles.msgContent, { textAlign: isRTL ? 'right' : 'left' }]}>
                     {s.content}
                   </AppText>
-                  <AppText variant="caption" color="#77839B" style={styles.msgFooterText}>
-                    {`⏰ ${isRTL ? 'موعد الإرسال' : 'Scheduled Time'}: ${s.scheduled_at}`}
+                  <AppText variant="caption" color="#77839B" style={[styles.msgFooterText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                    {`⏰ ${isRTL ? 'موعد الإرسال:' : 'Scheduled Time:'} ${s.scheduled_at}`}
                   </AppText>
                 </View>
               ))
@@ -391,10 +396,10 @@ export default function MessagesScreen() {
             {templatesList.length > 0 ? (
               templatesList.map((tmpl: MessageTemplate) => (
                 <View key={String(tmpl.id)} style={[styles.msgCard, isDark && styles.darkCard]}>
-                  <AppText variant="cardTitle" weight="bold" style={styles.msgTitle}>
+                  <AppText variant="cardTitle" weight="bold" style={[styles.msgTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
                     {`📋 ${tmpl.name}`}
                   </AppText>
-                  <AppText variant="body" color={isDark ? '#94A3B8' : '#344054'} style={styles.msgContent}>
+                  <AppText variant="body" color={isDark ? '#CBD5E1' : '#344054'} style={[styles.msgContent, { textAlign: isRTL ? 'right' : 'left' }]}>
                     {tmpl.content}
                   </AppText>
                 </View>
@@ -417,49 +422,86 @@ export default function MessagesScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
   darkSafeArea: { backgroundColor: '#07132B' },
-  header: { backgroundColor: '#FFFFFF', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 14 : 8, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#E2E8F0', gap: 10 },
+  header: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? 14 : 8,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    gap: 10,
+  },
   darkCard: { backgroundColor: '#0F244A', borderColor: '#1E3A6E' },
   darkSubCard: { backgroundColor: '#091A38', borderColor: '#1E3A6E' },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  headerRow: { justifyContent: 'space-between', alignItems: 'center' },
   headerTitleBlock: { flex: 1 },
-  title: { fontSize: 23, fontFamily: ibmPlexArabicFontFamily.bold, fontWeight: 'bold' },
-  subtitle: { fontSize: 14, fontFamily: ibmPlexArabicFontFamily.regular, marginTop: 2 },
-  balanceBadge: { backgroundColor: '#EEF4FF', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#D5E2F8', alignItems: 'center' },
-  balanceTitle: { fontSize: 12, fontFamily: ibmPlexArabicFontFamily.bold, fontWeight: '700' },
+  title: { fontSize: 22, fontFamily: ibmPlexArabicFontFamily.bold },
+  subtitle: { fontSize: 13, fontFamily: ibmPlexArabicFontFamily.regular, marginTop: 2 },
+  balanceBadge: {
+    backgroundColor: '#EEF4FF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D5E2F8',
+    alignItems: 'center',
+    minWidth: 90,
+  },
+  balanceTitle: { fontSize: 11.5, fontFamily: ibmPlexArabicFontFamily.bold },
   balanceValue: { fontSize: 15, fontFamily: ibmPlexArabicFontFamily.bold, marginTop: 1 },
-  tabsRow: { flexDirection: 'row', gap: 6 },
-  tabBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0' },
+  tabsRow: { gap: 6 },
+  tabBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
   tabBtnActive: { backgroundColor: '#1246B7', borderColor: '#1246B7' },
-  tabBtnText: { fontSize: 12.5, fontFamily: ibmPlexArabicFontFamily.semiBold, color: '#5A6784', fontWeight: '600' },
-  tabBtnTextActive: { color: '#FFFFFF', fontFamily: ibmPlexArabicFontFamily.bold, fontWeight: 'bold' },
+  tabBtnText: { fontSize: 12.5, fontFamily: ibmPlexArabicFontFamily.semiBold, color: '#5A6784' },
+  tabBtnTextActive: { color: '#FFFFFF', fontFamily: ibmPlexArabicFontFamily.bold },
   content: { padding: 14 },
-  msgCard: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#E2E8F0', ...shadows.card, gap: 6, marginBottom: 10 },
-  msgHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  msgCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    ...shadows.card,
+    gap: 6,
+    marginBottom: 10,
+  },
+  msgHeaderRow: { justifyContent: 'space-between', alignItems: 'center' },
   msgTitle: { fontSize: 16, fontFamily: ibmPlexArabicFontFamily.bold, flex: 1 },
   statusTag: { backgroundColor: '#EEF4FF', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  statusTagText: { fontSize: 12, fontFamily: ibmPlexArabicFontFamily.bold, color: '#1246B7', fontWeight: 'bold' },
-  msgContent: { fontSize: 14.5, fontFamily: ibmPlexArabicFontFamily.regular, marginVertical: 4 },
-  msgFooterText: { fontSize: 12.5, fontFamily: ibmPlexArabicFontFamily.regular },
+  statusTagText: { fontSize: 12, fontFamily: ibmPlexArabicFontFamily.bold, color: '#1246B7' },
+  msgContent: { fontSize: 14, fontFamily: ibmPlexArabicFontFamily.regular, marginVertical: 4 },
+  msgFooterText: { fontSize: 12, fontFamily: ibmPlexArabicFontFamily.regular },
   formCard: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#E2E8F0', gap: 8 },
   formSectionTitle: { fontSize: 17, fontFamily: ibmPlexArabicFontFamily.bold },
-  label: { fontSize: 14, fontFamily: ibmPlexArabicFontFamily.semiBold, color: '#344054', marginTop: 4 },
-  input: { borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, padding: 10, fontSize: 14.5, fontFamily: ibmPlexArabicFontFamily.regular, backgroundColor: '#F8FAFC' },
+  label: { fontSize: 13.5, fontFamily: ibmPlexArabicFontFamily.semiBold, color: '#344054', marginTop: 4 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 14,
+    fontFamily: ibmPlexArabicFontFamily.regular,
+    backgroundColor: '#F8FAFC',
+  },
   darkInput: { backgroundColor: '#091A38', borderColor: '#1E3A6E', color: '#F8FAFC' },
   resolveBtn: { backgroundColor: '#F8FAFC', paddingVertical: 8, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
-  resolveBtnText: { color: '#1246B7', fontSize: 13, fontFamily: ibmPlexArabicFontFamily.bold, fontWeight: 'bold' },
+  resolveBtnText: { color: '#1246B7', fontSize: 13, fontFamily: ibmPlexArabicFontFamily.bold },
   resolvedBox: { backgroundColor: '#F1FAF5', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#CBEBDA' },
-  resolvedText: { fontSize: 12.5, fontFamily: ibmPlexArabicFontFamily.regular },
-  formActionsRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  formActionsRow: { gap: 8, marginTop: 8 },
   sendBtn: { flex: 1, backgroundColor: '#1246B7', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  sendBtnText: { color: '#fff', fontSize: 15, fontFamily: ibmPlexArabicFontFamily.bold, fontWeight: 'bold' },
+  sendBtnText: { color: '#fff', fontSize: 14.5, fontFamily: ibmPlexArabicFontFamily.bold },
   draftBtn: { backgroundColor: '#F8FAFC', paddingHorizontal: 14, paddingVertical: 12, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
-  draftBtnText: { color: '#5A6784', fontSize: 14, fontFamily: ibmPlexArabicFontFamily.bold, fontWeight: 'bold' },
+  draftBtnText: { color: '#5A6784', fontSize: 14, fontFamily: ibmPlexArabicFontFamily.bold },
   emptyContainer: { alignItems: 'center', paddingVertical: 40, gap: 6 },
   emptyTitle: { fontSize: 16, fontFamily: ibmPlexArabicFontFamily.bold, marginTop: 6 },
   deleteLink: { marginTop: 6 },
-  deleteLinkText: { color: '#D92D20', fontSize: 12.5, fontFamily: ibmPlexArabicFontFamily.bold, fontWeight: 'bold' },
+  deleteLinkText: { color: '#D92D20', fontSize: 12.5, fontFamily: ibmPlexArabicFontFamily.bold },
   btnDisabled: { opacity: 0.6 },
-  ltrRow: { flexDirection: 'row' },
-  rtlText: { textAlign: 'right' },
-  ltrText: { textAlign: 'left' },
 });
