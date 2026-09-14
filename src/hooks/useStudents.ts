@@ -34,10 +34,19 @@ export function useStudents(params: StudentFilterParams = {}) {
     },
   });
 
+  const rawStudents = query.data;
+  const studentsList: Student[] = Array.isArray(rawStudents)
+    ? rawStudents
+    : Array.isArray((rawStudents as any)?.data)
+      ? (rawStudents as any).data
+      : Array.isArray((rawStudents as any)?.data?.data)
+        ? (rawStudents as any).data.data
+        : [];
+
   return {
     ...query,
-    students: Array.isArray(query.data) ? query.data : query.data?.data || [],
-    pagination: Array.isArray(query.data) ? null : query.data,
+    students: studentsList,
+    pagination: Array.isArray(rawStudents) ? null : rawStudents,
     createStudent: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
     updateStudent: updateMutation.mutateAsync,

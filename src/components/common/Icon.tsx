@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronDown,
+  ChevronUp,
   Shield,
   ShieldCheck,
   Smartphone,
@@ -83,6 +84,7 @@ export type IconName =
   | 'chevronRight'
   | 'chevronLeft'
   | 'chevronDown'
+  | 'chevronUp'
   | 'shield'
   | 'shieldCheck'
   | 'smartphone'
@@ -154,6 +156,7 @@ const lucideComponentMap: Record<IconName, React.FC<LucideProps>> = {
   chevronRight: ChevronRight,
   chevronLeft: ChevronLeft,
   chevronDown: ChevronDown,
+  chevronUp: ChevronUp,
   shield: Shield,
   shieldCheck: ShieldCheck,
   smartphone: Smartphone,

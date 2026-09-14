@@ -19,6 +19,8 @@ import { Icon } from '../common/Icon';
 import { ibmPlexArabicFontFamily } from '../../theme/typography';
 import { shadows } from '../../theme/spacing';
 
+import { useBehaviorIncidents } from '../../hooks/useBehavior';
+
 interface VicePrincipalDashboardProps {
   dashboardData?: any;
   liveTasks?: any[];
@@ -44,6 +46,15 @@ export const VicePrincipalDashboard: React.FC<VicePrincipalDashboardProps> = ({
   const { isRTL } = useAppDirection();
   const isDark = theme === 'dark';
 
+  const behaviorIncidentsQuery = useBehaviorIncidents();
+  const behaviorList = Array.isArray(behaviorIncidentsQuery.data) ? behaviorIncidentsQuery.data : [];
+  const openBehaviorCount = useMemo(() => {
+    return behaviorList.filter((inc: any) => {
+      const s = String(inc.status || '').toLowerCase();
+      return s !== 'closed' && s !== 'مغلقة' && s !== 'معالجة' && s !== 'تم الحل';
+    }).length;
+  }, [behaviorList]);
+
   const [selectedClassModal, setSelectedClassModal] = useState<any | null>(null);
   const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
   const [notifSentAlert, setNotifSentAlert] = useState(false);
@@ -53,7 +64,7 @@ export const VicePrincipalDashboard: React.FC<VicePrincipalDashboardProps> = ({
   const attendanceRate = kpis?.attendance_rate != null ? `${kpis.attendance_rate}%` : '0%';
   const absentCount = kpis?.absent_today != null ? kpis.absent_today : 18;
   const unexcusedCount = kpis?.unexcused_absent != null ? kpis.unexcused_absent : 18;
-  const openIncidents = kpis?.open_incidents != null ? kpis.open_incidents : 5;
+  const openIncidents = kpis?.open_incidents != null ? kpis.open_incidents : (behaviorIncidentsQuery.data ? openBehaviorCount : 0);
   const staffPresent = kpis?.staff_present_today != null ? kpis.staff_present_today : 0;
   const staffTotal = kpis?.staff_count != null ? kpis.staff_count : 3;
   const pendingTasks = kpis?.pending_tasks != null ? kpis.pending_tasks : 1;

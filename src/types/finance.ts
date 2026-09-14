@@ -135,3 +135,56 @@ export interface BankTransferPayload {
   [key: string]: any;
 }
 
+export interface AgingDistribution {
+  days_1_30?: number;
+  days_31_60?: number;
+  days_61_90?: number;
+  days_90_plus?: number;
+  [key: string]: any;
+}
+
+export interface AgingReportData {
+  aging?: AgingDistribution | Record<string, number>;
+  by_channel?: Record<string, number>;
+  [key: string]: any;
+}
+
+export interface OverdueItem {
+  id: string | number;
+  student_name?: string;
+  student_id?: string | number;
+  invoice_number?: string;
+  amount?: number;
+  due_amount?: number;
+  remaining_amount?: number;
+  days_overdue?: number;
+  due_date?: string;
+  stage_name?: string;
+  class_name?: string;
+  [key: string]: any;
+}
+
+export interface OverdueReportData {
+  rows?: OverdueItem[];
+  aging?: AgingDistribution;
+  kpis?: {
+    total_overdue?: number;
+    count?: number;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
+
+export interface CollectionByStageItem {
+  stage?: string;
+  stage_name?: string;
+  level?: string;
+  total_due?: number;
+  due?: number;
+  total_paid?: number;
+  paid?: number;
+  collected?: number;
+  remaining?: number;
+  [key: string]: any;
+}
+

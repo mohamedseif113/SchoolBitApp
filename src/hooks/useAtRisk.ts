@@ -5,6 +5,7 @@ import {
   getAtRiskAnalytics,
   getInterventions,
   createIntervention,
+  runAssessment,
 } from '../api/atRisk';
 
 export function useAtRiskStudents(params: Record<string, any> = {}) {
@@ -53,3 +54,14 @@ export function useCreateIntervention() {
     },
   });
 }
+
+export function useRunAtRiskAssessment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => runAssessment(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['atRisk'] });
+    },
+  });
+}
+

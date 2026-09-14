@@ -206,51 +206,6 @@ export default function StudentsScreen() {
     return false;
   };
 
-  // Fallback demo students list matching the 21 students and their exact classes
-  const defaultStudents: Student[] = useMemo(
-    () => [
-      // 1/أ (3 students matching screenshot exactly)
-      { id: 1, name: 'ماجد سعود القحطاني', national_id: '1126789054', student_number: 'STU-453981', class_name: '1/أ', status: 'active', guardian_phone: '0512345678', guardian_name: 'سعود القحطاني', gpa: '98%', attendance_rate: '99%', violations_count: 0 },
-      { id: 2, name: 'سلمان محمد العتيبي', national_id: '1082345618', student_number: 'STU-453982', class_name: '1/أ', status: 'active', guardian_phone: '0551234501', guardian_name: 'محمد العتيبي', gpa: '95%', attendance_rate: '97%', violations_count: 0 },
-      { id: 3, name: 'فيصل عبدالله القحطاني', national_id: '1071234589', student_number: 'STU-453983', class_name: '1/أ', status: 'active', guardian_phone: '0531476599', guardian_name: 'عبدالله القحطاني', gpa: '94%', attendance_rate: '98%', violations_count: 0 },
-
-      // 1/ب (3 students)
-      { id: 4, name: 'سعود ناصر العتيبي', national_id: '1200000004', student_number: 'STU-453984', class_name: '1/ب', status: 'active', guardian_phone: '0550000004', guardian_name: 'ناصر العتيبي', gpa: '94%', attendance_rate: '98%', violations_count: 0 },
-      { id: 5, name: 'فارس سلطان الشهري', national_id: '1200000005', student_number: 'STU-453985', class_name: '1/ب', status: 'active', guardian_phone: '0550000005', guardian_name: 'سلطان الشهري', gpa: '91%', attendance_rate: '96%', violations_count: 0 },
-      { id: 6, name: 'يوسف علي المالكي', national_id: '1200000006', student_number: 'STU-453986', class_name: '1/ب', status: 'at_risk', guardian_phone: '0550000006', guardian_name: 'علي المالكي', gpa: '78%', attendance_rate: '82%', violations_count: 1 },
-
-      // 2/أ (2 students)
-      { id: 7, name: 'عبدالعزيز سعد القرني', national_id: '1200000007', student_number: 'STU-453987', class_name: '2/أ', status: 'active', guardian_phone: '0550000007', guardian_name: 'سعد القرني', gpa: '96%', attendance_rate: '98%', violations_count: 0 },
-      { id: 8, name: 'تميم إبراهيم السبيعي', national_id: '1200000008', student_number: 'STU-453988', class_name: '2/أ', status: 'active', guardian_phone: '0550000008', guardian_name: 'إبراهيم السبيعي', gpa: '93%', attendance_rate: '95%', violations_count: 0 },
-
-      // 2/ب (3 students)
-      { id: 9, name: 'مشعل طلال السبيعي', national_id: '1200000009', student_number: 'STU-453989', class_name: '2/ب', status: 'at_risk', guardian_phone: '0550000009', guardian_name: 'طلال السبيعي', gpa: '72%', attendance_rate: '79%', violations_count: 2 },
-      { id: 10, name: 'بندر عايض الغامدي', national_id: '1200000010', student_number: 'STU-453990', class_name: '2/ب', status: 'active', guardian_phone: '0550000010', guardian_name: 'عايض الغامدي', gpa: '90%', attendance_rate: '94%', violations_count: 0 },
-      { id: 11, name: 'وليد عبدالله العمري', national_id: '1200000011', student_number: 'STU-453991', class_name: '2/ب', status: 'at_risk', guardian_phone: '0550000011', guardian_name: 'عبدالله العمري', gpa: '70%', attendance_rate: '75%', violations_count: 2 },
-
-      // 3/أ (2 students)
-      { id: 12, name: 'بدر تركي الحربي', national_id: '1200000012', student_number: 'STU-453992', class_name: '3/أ', status: 'active', guardian_phone: '0550000012', guardian_name: 'تركي الحربي', gpa: '97%', attendance_rate: '99%', violations_count: 0 },
-      { id: 13, name: 'ماجد حمد الشمري', national_id: '1200000013', student_number: 'STU-453993', class_name: '3/أ', status: 'at_risk', guardian_phone: '0550000013', guardian_name: 'حمد الشمري', gpa: '76%', attendance_rate: '81%', violations_count: 1 },
-
-      // 3/ب (2 students)
-      { id: 14, name: 'زياد فهد الرشيدي', national_id: '1200000014', student_number: 'STU-453994', class_name: '3/ب', status: 'at_risk', guardian_phone: '0550000014', guardian_name: 'فهد الرشيدي', gpa: '75%', attendance_rate: '80%', violations_count: 1 },
-      { id: 15, name: 'أنس وليد الحارثي', national_id: '1200000015', student_number: 'STU-453995', class_name: '3/ب', status: 'active', guardian_phone: '0550000015', guardian_name: 'وليد الحارثي', gpa: '92%', attendance_rate: '96%', violations_count: 0 },
-
-      // 4/أ (2 students)
-      { id: 16, name: 'راكان مساعد الدوسري', national_id: '1200000016', student_number: 'STU-453996', class_name: '4/أ', status: 'at_risk', guardian_phone: '0550000016', guardian_name: 'مساعد الدوسري', gpa: '73%', attendance_rate: '77%', violations_count: 1 },
-      { id: 17, name: 'ثامر عبدالعزيز الفيفي', national_id: '1200000017', student_number: 'STU-453997', class_name: '4/أ', status: 'at_risk', guardian_phone: '0550000017', guardian_name: 'عبدالعزيز الفيفي', gpa: '71%', attendance_rate: '76%', violations_count: 2 },
-
-      // 5/أ (2 students)
-      { id: 18, name: 'نايف سامي الزهراني', national_id: '1200000018', student_number: 'STU-453998', class_name: '5/أ', status: 'at_risk', guardian_phone: '0550000018', guardian_name: 'سامي الزهراني', gpa: '69%', attendance_rate: '74%', violations_count: 3 },
-      { id: 19, name: 'عبدالله حمد العسيري', national_id: '1200000019', student_number: 'STU-453999', class_name: '5/أ', status: 'at_risk', guardian_phone: '0550000019', guardian_name: 'حمد العسيري', gpa: '74%', attendance_rate: '78%', violations_count: 1 },
-
-      // 6/أ (2 students)
-      { id: 20, name: 'حسام عادل الشهري', national_id: '1200000020', student_number: 'STU-454000', class_name: '6/أ', status: 'at_risk', guardian_phone: '0550000020', guardian_name: 'عادل الشهري', gpa: '68%', attendance_rate: '73%', violations_count: 3 },
-      { id: 21, name: 'طلال منصور الخالدي', national_id: '1200000021', student_number: 'STU-454001', class_name: '6/أ', status: 'at_risk', guardian_phone: '0550000021', guardian_name: 'منصور الخالدي', gpa: '70%', attendance_rate: '75%', violations_count: 2 },
-    ],
-    []
-  );
-
   const safeStudentField = (val: any, fallbackVal: string): string => {
     if (val === null || val === undefined) return fallbackVal;
     const str = String(val).trim();
@@ -270,29 +225,46 @@ export default function StudentsScreen() {
   };
 
   const allStudents = useMemo(() => {
-    const rawList = apiStudents && apiStudents.length > 0 ? apiStudents : defaultStudents;
+    const rawList = Array.isArray(apiStudents) ? apiStudents : [];
 
     return rawList.map((st: any, idx: number) => {
-      const fallback = defaultStudents[idx % defaultStudents.length] || defaultStudents[0];
-
       const name = safeStudentField(
         st.name || `${st.first_name || ''} ${st.last_name || ''}`.trim(),
-        fallback.name
+        'طالب'
       );
-      const nationalId = safeStudentField(
-        st.national_id || st.idNum || st.identity_number || st.student_id,
-        fallback.national_id || '1200000015'
-      );
+      const rawNationalId =
+        st.national_id ||
+        st.identity_number ||
+        st.idNum ||
+        st.national_number ||
+        st.civil_id ||
+        st.identity_no ||
+        st.id_number ||
+        st.iqama_number ||
+        st.iqama ||
+        (typeof st.identity === 'object' ? st.identity?.number || st.identity?.id : st.identity);
+
+      const nationalId = safeStudentField(rawNationalId, '—');
+
       const studentNum = safeStudentField(
-        st.academic_number || st.student_number || st.code,
-        `STU-${453980 + (st.id || idx)}`
-      );
-      const className = safeStudentField(
-        st.class_name || (st as any).classroom || st.section_name || st.class,
-        fallback.class_name || '5/أ'
+        st.academic_number || st.student_number || st.code || st.employee_id,
+        st.id ? `STU-${st.id}` : '—'
       );
 
-      // Synthesize guardian name if empty or missing in API
+      const rawClass =
+        st.class_name ||
+        (typeof st.classroom === 'string' ? st.classroom : st.classroom?.name || st.classroom?.title || st.classroom?.class_name) ||
+        st.classroom_name ||
+        (typeof st.section === 'string' ? st.section : st.section?.name || st.section?.title) ||
+        st.section_name ||
+        (typeof st.class === 'string' ? st.class : st.class?.name || st.class?.title) ||
+        (typeof st.grade === 'string' ? st.grade : st.grade?.name || st.grade?.title) ||
+        st.grade_name ||
+        st.group_name;
+
+      const className = safeStudentField(rawClass, '—');
+
+      // Synthesize guardian name from student name if missing in API
       let guardianName = safeStudentField(
         st.guardian_name || st.guardian?.name || st.guardian_full_name || st.father_name || st.parent_name,
         ''
@@ -304,28 +276,28 @@ export default function StudentsScreen() {
         } else if (parts.length === 2) {
           guardianName = `${parts[1]}`;
         } else {
-          guardianName = fallback.guardian_name || 'سعود القحطاني';
+          guardianName = '—';
         }
       }
 
       const guardianPhone = safeStudentField(
         st.guardian_phone || st.guardian?.phone || st.guardian?.mobile || st.parent_phone || st.mobile || st.phone,
-        fallback.guardian_phone || '0512345678'
+        '—'
       );
       const birthDate = safeStudentField(
         st.birth_date || st.dob || st.date_of_birth || st.birthdate,
-        '2012-05-15'
+        '—'
       );
       const address = safeStudentField(
         st.address || st.city || st.location || st.residence,
-        'الرياض - حي الملز'
+        '—'
       );
 
       // Attendance Rate formatting
       const rawAtt = st.attendance_rate ?? st.attendance_percentage ?? st.attendance;
       let attendanceRate = safeStudentField(rawAtt, '');
       if (!attendanceRate) {
-        attendanceRate = String(fallback.attendance_rate || '96%');
+        attendanceRate = '—';
       } else if (typeof rawAtt === 'number') {
         attendanceRate = `${rawAtt}%`;
       } else if (!attendanceRate.includes('%')) {
@@ -336,12 +308,29 @@ export default function StudentsScreen() {
       const rawGpa = st.gpa ?? st.score ?? st.grade_average;
       let gpa = safeStudentField(rawGpa, '');
       if (!gpa) {
-        gpa = String(fallback.gpa || '94.5%');
+        gpa = '—';
       } else if (typeof rawGpa === 'number') {
         gpa = `${rawGpa}%`;
       } else if (!gpa.includes('%')) {
         gpa = `${gpa}%`;
       }
+
+      // Status normalization
+      const rawStatus = String(st.status || '').toLowerCase();
+      const isAtRiskStudent =
+        rawStatus === 'at_risk' ||
+        rawStatus === 'follow_up' ||
+        rawStatus === 'متابعة' ||
+        rawStatus === 'في خطر' ||
+        rawStatus === 'warning' ||
+        rawStatus === 'monitored' ||
+        st.is_at_risk === true ||
+        st.at_risk === true ||
+        (st.violations_count && Number(st.violations_count) > 0) ||
+        (st.incidents_count && Number(st.incidents_count) > 0) ||
+        (rawStatus !== 'normal' && rawStatus !== 'active' && rawStatus !== 'طبيعي' && rawStatus !== 'excellent' && rawStatus !== 'outstanding' && rawStatus !== '' && rawStatus !== '—');
+
+      const normalizedStatus = isAtRiskStudent ? 'at_risk' : (st.status || 'normal');
 
       return {
         ...st,
@@ -355,11 +344,12 @@ export default function StudentsScreen() {
         address,
         attendance_rate: attendanceRate,
         gpa,
-        violations_count: st.violations_count ?? st.incidents_count ?? fallback.violations_count ?? 0,
+        status: normalizedStatus,
+        violations_count: st.violations_count ?? st.incidents_count ?? 0,
         notes_count: st.notes_count ?? st.comments_count ?? 0,
       };
     });
-  }, [apiStudents, defaultStudents]);
+  }, [apiStudents]);
 
   const statusKpis = useMemo(() => {
     const outstanding = allStudents.filter((s) => s.status === 'excellent' || s.status === 'outstanding').length;
@@ -886,7 +876,7 @@ export default function StudentsScreen() {
                               {st.name}
                             </AppText>
                             <AppText variant="caption" color="#94A3B8" style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                              {(st as any).student_number || `STU-${453980 + idx}`} · {st.national_id || '1200000016'}
+                              {st.student_number || (st.id ? `STU-${st.id}` : '—')}{st.national_id && st.national_id !== '—' ? ` · الهوية: ${st.national_id}` : ''}
                             </AppText>
                           </View>
                         </View>
@@ -1059,14 +1049,14 @@ export default function StudentsScreen() {
                                 {st.name}
                               </AppText>
                               <AppText variant="caption" color="#94A3B8">
-                                {(st as any).student_number || `STU-${453980 + idx}`} · {st.national_id || '1200000016'}
+                                {st.student_number || (st.id ? `STU-${st.id}` : '—')}${st.national_id && st.national_id !== '—' ? ` · الهوية: ${st.national_id}` : ''}
                               </AppText>
                             </View>
                           </View>
 
                           <View style={styles.colClass}>
                             <AppText variant="body" color={isDark ? '#F8FAFC' : '#334155'} style={styles.textCenter}>
-                              {st.class_name || '6/أ'}
+                              {st.class_name || '—'}
                             </AppText>
                           </View>
 
@@ -1461,7 +1451,7 @@ export default function StudentsScreen() {
                       {selectedStudentForProfile.name}
                     </AppText>
                     <AppText variant="caption" color="#FDE8E8" style={styles.profileUserId}>
-                      {`${safeStudentField(selectedStudentForProfile.student_number, `STU-${453980 + Number(selectedStudentForProfile.id || 1)}`)} • ${safeStudentField(selectedStudentForProfile.national_id, '1200000015')} • ${safeStudentField(selectedStudentForProfile.class_name, '5/أ')}`}
+                      {`${safeStudentField(selectedStudentForProfile.student_number || (selectedStudentForProfile.id ? `STU-${selectedStudentForProfile.id}` : ''), '—')}${selectedStudentForProfile.national_id && selectedStudentForProfile.national_id !== '—' ? ` • الهوية: ${selectedStudentForProfile.national_id}` : ''}${selectedStudentForProfile.class_name ? ` • ${selectedStudentForProfile.class_name}` : ''}`}
                     </AppText>
 
                     <View style={[styles.profileHeaderBadgesRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -1472,7 +1462,7 @@ export default function StudentsScreen() {
                       </View>
                       <View style={styles.profileAttendancePill}>
                         <AppText variant="captionBold" color="#FFFFFF">
-                          {isRTL ? `حضور ${safeStudentField(selectedStudentForProfile.attendance_rate, '96%')}` : `Att ${safeStudentField(selectedStudentForProfile.attendance_rate, '96%')}`}
+                          {isRTL ? `حضور ${safeStudentField(selectedStudentForProfile.attendance_rate, '—')}` : `Att ${safeStudentField(selectedStudentForProfile.attendance_rate, '—')}`}
                         </AppText>
                       </View>
                     </View>
@@ -1498,7 +1488,7 @@ export default function StudentsScreen() {
                     </View>
                     <View style={styles.profileMetricTile}>
                       <AppText variant="captionBold" color="#FFFFFF">
-                        {safeStudentField(selectedStudentForProfile.gpa, '94.5%')}
+                        {safeStudentField(selectedStudentForProfile.gpa, '—')}
                       </AppText>
                       <AppText variant="caption" color="#FDE8E8">
                         {isRTL ? 'المعدل' : 'GPA'}
@@ -1506,7 +1496,7 @@ export default function StudentsScreen() {
                     </View>
                     <View style={styles.profileMetricTile}>
                       <AppText variant="captionBold" color="#FFFFFF">
-                        {safeStudentField(selectedStudentForProfile.attendance_rate, '96%')}
+                        {safeStudentField(selectedStudentForProfile.attendance_rate, '—')}
                       </AppText>
                       <AppText variant="caption" color="#FDE8E8">
                         {isRTL ? 'الحضور' : 'Attendance'}
@@ -1562,10 +1552,10 @@ export default function StudentsScreen() {
                       <View style={[styles.infoGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                         <View style={[styles.infoCard, isDark && styles.darkInputBox, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
                           <AppText variant="caption" color="#64748B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                            {isRTL ? 'الصف' : 'Class'}
+                            {isRTL ? 'الصف والفرع' : 'Class / Grade'}
                           </AppText>
                           <AppText variant="bodyBold" color={isDark ? '#F8FAFC' : '#0F172A'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                            {safeStudentField(selectedStudentForProfile.class_name, '5/أ')}
+                            {safeStudentField(selectedStudentForProfile.class_name, '—')}
                           </AppText>
                         </View>
 
@@ -1574,7 +1564,7 @@ export default function StudentsScreen() {
                             {isRTL ? 'رقم الهوية' : 'National ID'}
                           </AppText>
                           <AppText variant="bodyBold" color={isDark ? '#F8FAFC' : '#0F172A'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                            {safeStudentField(selectedStudentForProfile.national_id, '1200000015')}
+                            {safeStudentField(selectedStudentForProfile.national_id, '—')}
                           </AppText>
                         </View>
 
@@ -1583,7 +1573,7 @@ export default function StudentsScreen() {
                             {isRTL ? 'ولي الأمر' : 'Guardian'}
                           </AppText>
                           <AppText variant="bodyBold" color={isDark ? '#F8FAFC' : '#0F172A'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                            {safeStudentField(selectedStudentForProfile.guardian_name || selectedStudentForProfile.guardian?.name, 'سعود القحطاني')}
+                            {safeStudentField(selectedStudentForProfile.guardian_name || selectedStudentForProfile.guardian?.name, '—')}
                           </AppText>
                         </View>
 
@@ -1592,7 +1582,7 @@ export default function StudentsScreen() {
                             {isRTL ? 'تاريخ الميلاد' : 'Birth Date'}
                           </AppText>
                           <AppText variant="bodyBold" color={isDark ? '#F8FAFC' : '#0F172A'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                            {safeStudentField(selectedStudentForProfile.birth_date, '2012-05-15')}
+                            {safeStudentField(selectedStudentForProfile.birth_date, '—')}
                           </AppText>
                         </View>
 
@@ -2414,7 +2404,7 @@ export default function StudentsScreen() {
                               numberOfLines={1}
                               style={{ textAlign: isRTL ? 'right' : 'left', marginTop: 2 }}
                             >
-                              {st.national_id || '1126789054'}  ·  {st.guardian_phone || '0512345678'}
+                              {st.national_id && st.national_id !== '—' ? `الهوية: ${st.national_id}` : (st.student_number || '—')}{st.guardian_phone && st.guardian_phone !== '—' ? `  ·  ${st.guardian_phone}` : ''}
                             </AppText>
                           </View>
                         </View>

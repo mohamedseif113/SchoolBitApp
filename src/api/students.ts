@@ -6,10 +6,19 @@ import {
   StudentPaginatedResponse,
 } from '../types/student';
 
+function extractArrayData<T>(raw: any): T[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw.data)) return raw.data;
+  if (raw.data && Array.isArray(raw.data.data)) return raw.data.data;
+  if (Array.isArray(raw.items)) return raw.items;
+  return [];
+}
+
 // Official API: students are retrieved via /employees with type=student filter
-export async function getStudents(params: StudentFilterParams = {}): Promise<StudentPaginatedResponse | Student[]> {
-  const response = await apiClient.get('/employees', { params: { type: 'student', ...params } });
-  return response.data?.data || response.data;
+export async function getStudents(params: StudentFilterParams = {}): Promise<Student[]> {
+  const response = await apiClient.get('/employees', { params: { type: 'student', per_page: 100, ...params } });
+  return extractArrayData<Student>(response.data);
 }
 
 export async function getStudent(id: string | number): Promise<Student> {
@@ -36,15 +45,21 @@ export async function deleteStudent(id: string | number): Promise<{ success: boo
 }
 
 export async function getStudentGuardians(id: string | number): Promise<any[]> {
-  const response = await apiClient.get(`/employees/${id}/guardians`);
-  const data = response.data?.data || response.data;
-  return Array.isArray(data) ? data : [];
+  try {
+    const response = await apiClient.get(`/employees/${id}/guardians`);
+    return extractArrayData<any>(response.data);
+  } catch {
+    return [];
+  }
 }
 
 export async function getStudentGrades(id: string | number): Promise<any[]> {
-  const response = await apiClient.get(`/employees/${id}/grades`);
-  const data = response.data?.data || response.data;
-  return Array.isArray(data) ? data : [];
+  try {
+    const response = await apiClient.get(`/employees/${id}/grades`);
+    return extractArrayData<any>(response.data);
+  } catch {
+    return [];
+  }
 }
 
 export const studentsApi = {

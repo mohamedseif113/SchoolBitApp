@@ -312,7 +312,7 @@ export default function AppNavigator() {
           {() => <PermissionGuard permission="reports.view"><ReportsScreen /></PermissionGuard>}
         </Stack.Screen>
         <Stack.Screen name="Finance">
-          {() => <PermissionGuard permission="finance.reports.view"><FinanceScreen /></PermissionGuard>}
+          {() => <PermissionGuard permissions={['finance.view', 'finance.reports.view', 'finance.manage', 'finance.fee_types.view', 'finance.payment_status.view']}><FinanceScreen /></PermissionGuard>}
         </Stack.Screen>
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Behavior">

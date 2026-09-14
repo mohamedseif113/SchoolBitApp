@@ -22,12 +22,14 @@ import { AppText } from '../../components/common/AppText';
 import { Icon } from '../../components/common/Icon';
 import { WebDashboardLayout } from '../../components/layout/WebDashboardLayout';
 
+import { useStudents } from '../../hooks/useStudents';
+
 type TopTab = 'attendance' | 'records' | 'permissions' | 'biotime_setup';
 type SubTab = 'daily' | 'periods' | 'live_fingerprint' | 'dismissal' | 'daily_report';
 type StatusFilter = 'all' | 'present' | 'late' | 'absent' | 'excused';
 
 interface StudentAttendanceRow {
-  id: number;
+  id: number | string;
   name: string;
   national_id: string;
   class_name: string;
@@ -42,9 +44,10 @@ export default function AttendanceScreen() {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
 
+  const todayIso = useMemo(() => new Date().toISOString().split('T')[0], []);
   const [topTab, setTopTab] = useState<TopTab>('attendance');
   const [subTab, setSubTab] = useState<SubTab>('daily');
-  const [currentDateIso, setCurrentDateIso] = useState('2026-09-07');
+  const [currentDateIso, setCurrentDateIso] = useState(todayIso);
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [classDropdownOpen, setClassDropdownOpen] = useState(false);
   const [datePickerModalOpen, setDatePickerModalOpen] = useState(false);
@@ -58,14 +61,9 @@ export default function AttendanceScreen() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   // Student attendance status state
-  const [studentStatuses, setStudentStatuses] = useState<Record<number, string>>({
-    1: 'absent',
-    2: 'absent',
-    3: 'absent',
-    4: 'absent',
-    5: 'absent',
-    6: 'absent',
-  });
+  const [studentStatuses, setStudentStatuses] = useState<Record<string | number, string>>({});
+
+  const { students: apiStudents, isLoading: isStudentsLoading, refetch: refetchStudents } = useStudents();
 
   const {
     summary,
@@ -80,36 +78,28 @@ export default function AttendanceScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await refetch();
+      await Promise.all([refetch(), refetchStudents()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refetch]);
+  }, [refetch, refetchStudents]);
 
   const classOptions = ['all', '1/أ', '1/ب', '2/أ', '2/ب', '3/أ', '3/ب', '4/أ', '5/أ', '6/أ'];
 
-  // Demo students list matching Screenshot 4 from user
-  const defaultStudents: StudentAttendanceRow[] = useMemo(
-    () => [
-      { id: 1, name: 'أنس وليد الحارثي', national_id: '1280998888', class_name: '1/أ' },
-      { id: 2, name: 'بدر عايض الغامدي', national_id: '1288888899', class_name: '2/ب' },
-      { id: 3, name: 'تركي فريد الزهراني', national_id: '1115078945', class_name: '2/أ' },
-      { id: 4, name: 'ثامر عبدالعزيز الفيفي', national_id: '1200000010', class_name: '4/أ' },
-      { id: 5, name: 'حسام عادل الشهري', national_id: '1200000015', class_name: '6/أ' },
-      { id: 6, name: 'خالد سلطان المطيري', national_id: '1200000002', class_name: '1/أ' },
-      { id: 7, name: 'راكان مساعد الدوسري', national_id: '1200000011', class_name: '4/أ' },
-      { id: 8, name: 'زياد فهد الرشيدي', national_id: '1200000009', class_name: '3/ب' },
-      { id: 9, name: 'سلمان محمد العتيبي', national_id: '1200000003', class_name: '1/أ' },
-      { id: 10, name: 'طلال منصور الخالدي', national_id: '1200000014', class_name: '6/أ' },
-      { id: 11, name: 'عبدالله حمد السبيعي', national_id: '1200000012', class_name: '5/أ' },
-      { id: 12, name: 'فيصل عبدالله القحطاني', national_id: '1200000004', class_name: '1/أ' },
-    ],
-    []
-  );
+  // Map real students from API
+  const realStudents: StudentAttendanceRow[] = useMemo(() => {
+    if (!apiStudents || !Array.isArray(apiStudents)) return [];
+    return apiStudents.map((st: any, idx: number) => ({
+      id: st.id || idx + 1,
+      name: st.name || `${st.first_name || ''} ${st.last_name || ''}`.trim() || 'طالب',
+      national_id: st.national_id || st.idNum || st.identity_number || '—',
+      class_name: st.class_name || (st as any).classroom || st.section_name || '—',
+    }));
+  }, [apiStudents]);
 
   // Filter students based on class selection, search query, and status filter
   const displayStudents = useMemo(() => {
-    return defaultStudents.filter((st) => {
+    return realStudents.filter((st) => {
       // 1. Class filter
       if (selectedClass !== 'all' && st.class_name !== selectedClass) {
         return false;
@@ -123,12 +113,12 @@ export default function AttendanceScreen() {
       }
       // 3. Status filter
       if (statusFilter !== 'all') {
-        const stStatus = studentStatuses[st.id] || 'no_school';
+        const stStatus = studentStatuses[st.id] || (st as any).attendance_status || (st as any).status || 'absent';
         if (stStatus !== statusFilter) return false;
       }
       return true;
     });
-  }, [defaultStudents, selectedClass, searchQuery, statusFilter, studentStatuses]);
+  }, [realStudents, selectedClass, searchQuery, statusFilter, studentStatuses]);
 
   // Live dynamic calculation of KPI statistics
   const kpiStats = useMemo(() => {
@@ -137,30 +127,35 @@ export default function AttendanceScreen() {
     let late = 0;
     let excused = 0;
 
-    defaultStudents.forEach((st) => {
-      const status = studentStatuses[st.id];
+    const total = realStudents.length;
+
+    realStudents.forEach((st) => {
+      const status = studentStatuses[st.id] || (st as any).attendance_status || (st as any).status || 'absent';
       if (status === 'present') present++;
       else if (status === 'absent') absent++;
       else if (status === 'late') late++;
       else if (status === 'excused') excused++;
     });
 
-    const total = defaultStudents.length;
+    const absentCount = summary?.absent != null ? summary.absent : (summary?.absent_today != null ? summary.absent_today : absent);
+    const presentCount = summary?.present != null ? summary.present : (summary?.present_today != null ? summary.present_today : present);
+    const lateCount = summary?.late != null ? summary.late : (summary?.late_today != null ? summary.late_today : late);
+    const excusedCount = summary?.excused != null ? summary.excused : (summary?.excused_today != null ? summary.excused_today : excused);
 
     return {
-      total,
-      present,
-      absent,
-      late,
-      excused,
-      absentPercent: total > 0 ? Math.round((absent / total) * 100) : 0,
-      presentPercent: total > 0 ? Math.round((present / total) * 100) : 0,
-      latePercent: total > 0 ? Math.round((late / total) * 100) : 0,
-      excusedPercent: total > 0 ? Math.round((excused / total) * 100) : 0,
+      total: summary?.total || total,
+      present: presentCount,
+      absent: absentCount,
+      late: lateCount,
+      excused: excusedCount,
+      absentPercent: total > 0 ? Math.round((absentCount / total) * 100) : 0,
+      presentPercent: total > 0 ? Math.round((presentCount / total) * 100) : 0,
+      latePercent: total > 0 ? Math.round((lateCount / total) * 100) : 0,
+      excusedPercent: total > 0 ? Math.round((excusedCount / total) * 100) : 0,
     };
-  }, [defaultStudents, studentStatuses]);
+  }, [realStudents, studentStatuses, summary]);
 
-  const handleSetStatus = (studentId: number, status: string) => {
+  const handleSetStatus = (studentId: number | string, status: string) => {
     setStudentStatuses((prev) => ({
       ...prev,
       [studentId]: prev[studentId] === status ? '' : status,

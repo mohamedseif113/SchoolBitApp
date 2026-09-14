@@ -8,10 +8,19 @@ import {
   UpdateIncidentPayload,
 } from '../types/behavior';
 
+function extractArrayData<T>(raw: any): T[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw.data)) return raw.data;
+  if (raw.data && Array.isArray(raw.data.data)) return raw.data.data;
+  if (Array.isArray(raw.items)) return raw.items;
+  if (Array.isArray(raw.incidents)) return raw.incidents;
+  return [];
+}
+
 export async function getIncidents(params: IncidentFilterParams = {}): Promise<BehaviorIncident[]> {
-  const response = await apiClient.get('/behavior/incidents', { params });
-  const data = response.data?.data || response.data;
-  return Array.isArray(data) ? data : [];
+  const response = await apiClient.get('/behavior/incidents', { params: { per_page: 100, ...params } });
+  return extractArrayData<BehaviorIncident>(response.data);
 }
 
 export async function getIncident(id: string | number): Promise<BehaviorIncident> {
@@ -43,9 +52,12 @@ export async function closeIncident(
 }
 
 export async function getRules(params: Record<string, any> = {}): Promise<BehaviorRule[]> {
-  const response = await apiClient.get('/behavior/rules', { params });
-  const data = response.data?.data || response.data;
-  return Array.isArray(data) ? data : [];
+  try {
+    const response = await apiClient.get('/behavior/rules', { params });
+    return extractArrayData<BehaviorRule>(response.data);
+  } catch {
+    return [];
+  }
 }
 
 export async function getRule(id: string | number): Promise<BehaviorRule> {

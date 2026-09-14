@@ -37,7 +37,7 @@ export async function getBillingSummary(): Promise<BillingSummary> {
 }
 
 export async function getInvoices(params: Record<string, any> = {}): Promise<Invoice[]> {
-  const response = await apiClient.get('/finance/invoices', { params });
+  const response = await apiClient.get('/finance/invoices', { params: { per_page: 100, ...params } });
   return extractArrayData<Invoice>(response.data);
 }
 
@@ -48,7 +48,7 @@ export async function getInvoiceDetails(id: string | number): Promise<Invoice> {
 
 export async function getPaymentTransactions(params: Record<string, any> = {}): Promise<PaymentTransaction[]> {
   try {
-    const response = await apiClient.get('/finance/payments', { params });
+    const response = await apiClient.get('/finance/payments', { params: { per_page: 100, ...params } });
     return extractArrayData<PaymentTransaction>(response.data);
   } catch {
     return [];
@@ -99,6 +99,33 @@ export async function submitBankTransfer(payload: BankTransferPayload): Promise<
   return extractObjectData<{ success: boolean; message?: string }>(response.data);
 }
 
+export async function getAgingReport(params: Record<string, any> = {}): Promise<any> {
+  try {
+    const response = await apiClient.get('/finance/reports/aging', { params });
+    return extractObjectData(response.data);
+  } catch {
+    return {};
+  }
+}
+
+export async function getOverdueReport(params: Record<string, any> = {}): Promise<any> {
+  try {
+    const response = await apiClient.get('/finance/overdue', { params });
+    return extractObjectData(response.data);
+  } catch {
+    return {};
+  }
+}
+
+export async function getFinancialReport(reportType: string, params: Record<string, any> = {}): Promise<any> {
+  try {
+    const response = await apiClient.get(`/finance/reports/${reportType}`, { params });
+    return extractObjectData(response.data);
+  } catch {
+    return {};
+  }
+}
+
 export const financeApi = {
   getBillingSummary,
   getInvoices,
@@ -112,6 +139,9 @@ export const financeApi = {
   getSubscription,
   getPlans,
   submitBankTransfer,
+  getAgingReport,
+  getOverdueReport,
+  getFinancialReport,
 };
 
 export default financeApi;

@@ -11,6 +11,9 @@ import {
   getSubscription,
   getPlans,
   submitBankTransfer,
+  getAgingReport,
+  getOverdueReport,
+  getFinancialReport,
 } from '../api/finance';
 import { BankTransferPayload } from '../types/finance';
 
@@ -105,6 +108,31 @@ export function useSubmitBankTransfer() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['finance'] });
     },
+  });
+}
+
+export function useAgingReport(params: Record<string, any> = {}) {
+  return useQuery({
+    queryKey: ['finance', 'reports', 'aging', params],
+    queryFn: () => getAgingReport(params),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useOverdueReport(params: Record<string, any> = {}) {
+  return useQuery({
+    queryKey: ['finance', 'overdue', params],
+    queryFn: () => getOverdueReport(params),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useFinancialReport(reportType: string, params: Record<string, any> = {}) {
+  return useQuery({
+    queryKey: ['finance', 'reports', reportType, params],
+    queryFn: () => getFinancialReport(reportType, params),
+    staleTime: 1000 * 60 * 5,
+    enabled: !!reportType,
   });
 }
 

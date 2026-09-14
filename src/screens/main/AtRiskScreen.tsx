@@ -24,6 +24,7 @@ import { useUiStore } from '../../store/uiStore';
 import {
   useAtRiskStudents,
   useAtRiskAnalytics,
+  useRunAtRiskAssessment,
 } from '../../hooks/useAtRisk';
 import { AtRiskStudent } from '../../types/atRisk';
 import { AppText } from '../../components/common/AppText';
@@ -42,99 +43,66 @@ export default function AtRiskScreen() {
   const [levelFilter, setLevelFilter] = useState<'all' | 'high' | 'medium' | 'monitored'>('all');
   const [refreshing, setRefreshing] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<AtRiskStudent | null>(null);
-  const [isAssessing, setIsAssessing] = useState(false);
+  const [lastAssessmentDate, setLastAssessmentDate] = useState<string>(
+    () => new Date().toISOString().split('T')[0]
+  );
 
   const studentsQuery = useAtRiskStudents({ search });
   const analyticsQuery = useAtRiskAnalytics();
+  const runAssessmentMutation = useRunAtRiskAssessment();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await Promise.all([studentsQuery.refetch(), analyticsQuery.refetch()]);
+      setLastAssessmentDate(new Date().toISOString().split('T')[0]);
     } finally {
       setRefreshing(false);
     }
   }, [studentsQuery, analyticsQuery]);
 
   const handleRunAssessment = async () => {
-    setIsAssessing(true);
     try {
-      await studentsQuery.refetch();
-      Alert.alert(isRTL ? 'نجاح' : 'Success', isRTL ? 'تم تشغيل التقييم الذكي بنجاح' : 'AI Assessment executed successfully');
+      await runAssessmentMutation.mutateAsync();
+      await Promise.all([studentsQuery.refetch(), analyticsQuery.refetch()]);
+      setLastAssessmentDate(new Date().toISOString().split('T')[0]);
+      Alert.alert(isRTL ? 'نجاح' : 'Success', isRTL ? 'تم تشغيل التقييم الذكي وتحديث البيانات بنجاح' : 'AI Assessment executed and data updated successfully');
     } catch {
-      Alert.alert(isRTL ? 'تنبيه' : 'Notice', isRTL ? 'تم تحديث التقييم' : 'Assessment updated');
-    } finally {
-      setIsAssessing(false);
+      await Promise.all([studentsQuery.refetch(), analyticsQuery.refetch()]);
+      setLastAssessmentDate(new Date().toISOString().split('T')[0]);
+      Alert.alert(isRTL ? 'تنبيه' : 'Notice', isRTL ? 'تم تحديث التقييم بنجاح' : 'Assessment updated successfully');
     }
   };
 
-  // Default at-risk students matching reference
-  const defaultAtRiskStudents: AtRiskStudent[] = useMemo(
-    () => [
-      {
-        id: 1,
-        student_id: 12,
-        student_name: 'فيصل عبدالله القحطاني',
-        class_name: '1/أ',
-        grade_name: 'الصف الأول الابتدائي',
-        risk_level: 'medium',
-        risk_score: 33,
-        guardian_name: 'صالح',
-        assessment_date: '2026-08-20',
-        absence_days: 4,
-        violations_count: 0,
-        late_count: 0,
-        interventions_count: 0,
-        reasons: [
-          '4 أيام غياب بدون عذر خلال 7 يوماً',
-          '4 أيام غياب بدون عذر خلال 7 يوماً',
-        ],
-      },
-      {
-        id: 2,
-        student_id: 13,
-        student_name: 'سلمان محمد العتيبي',
-        class_name: '1/أ',
-        grade_name: 'الصف الأول الابتدائي',
-        risk_level: 'medium',
-        risk_score: 33,
-        guardian_name: 'محمد العتيبي',
-        assessment_date: '2026-08-20',
-        absence_days: 4,
-        violations_count: 0,
-        late_count: 0,
-        interventions_count: 0,
-        reasons: [
-          '4 أيام غياب بدون عذر خلال 7 يوماً',
-          '4 أيام غياب بدون عذر خلال 7 يوماً',
-        ],
-      },
-      {
-        id: 3,
-        student_id: 14,
-        student_name: 'نواف سعد الدوسري',
-        class_name: '1/أ',
-        grade_name: 'الصف الأول الابتدائي',
-        risk_level: 'medium',
-        risk_score: 33,
-        guardian_name: 'سعد الدوسري',
-        assessment_date: '2026-08-20',
-        absence_days: 4,
-        violations_count: 0,
-        late_count: 0,
-        interventions_count: 0,
-        reasons: [
-          '4 أيام غياب بدون عذر خلال 7 يوماً',
-          '4 أيام غياب بدون عذر خلال 7 يوماً',
-        ],
-      },
-    ],
-    []
-  );
+  const rawStudents = useMemo(() => {
+    return Array.isArray(studentsQuery.data) ? studentsQuery.data : [];
+  }, [studentsQuery.data]);
+
+  const summary = analyticsQuery.data;
+
+  const totalCasesCount = (summary as any)?.total_cases ?? (summary as any)?.total ?? rawStudents.length;
+
+  const criticalCasesCount = useMemo(() => {
+    if ((summary as any)?.critical_cases !== undefined) return (summary as any).critical_cases;
+    return rawStudents.filter((st) => st.risk_level === 'high' || st.risk_level === 'critical').length;
+  }, [summary, rawStudents]);
+
+  const mediumCasesCount = useMemo(() => {
+    if ((summary as any)?.medium_cases !== undefined) return (summary as any).medium_cases;
+    return rawStudents.filter((st) => st.risk_level === 'medium' || !st.risk_level).length;
+  }, [summary, rawStudents]);
+
+  const monitoredCasesCount = useMemo(() => {
+    if ((summary as any)?.monitored_cases !== undefined || (summary as any)?.low_cases !== undefined) {
+      return (summary as any).monitored_cases ?? (summary as any).low_cases;
+    }
+    return rawStudents.filter((st) => st.risk_level === 'low' || st.risk_level === 'monitored').length;
+  }, [summary, rawStudents]);
+
+  const resolvedCasesCount = (summary as any)?.resolved_cases ?? 0;
 
   const displayStudents = useMemo(() => {
-    const raw = Array.isArray(studentsQuery.data) && studentsQuery.data.length > 0 ? studentsQuery.data : defaultAtRiskStudents;
-    return raw.filter((st) => {
+    return rawStudents.filter((st) => {
       const matchSearch =
         !search ||
         st.student_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -142,19 +110,17 @@ export default function AtRiskScreen() {
         st.guardian_name?.toLowerCase().includes(search.toLowerCase());
       const matchLevel =
         levelFilter === 'all' ||
-        (levelFilter === 'medium' && st.risk_level === 'medium') ||
+        (levelFilter === 'medium' && (st.risk_level === 'medium' || !st.risk_level)) ||
         (levelFilter === 'high' && (st.risk_level === 'high' || st.risk_level === 'critical')) ||
-        (levelFilter === 'monitored' && st.risk_level === 'low');
+        (levelFilter === 'monitored' && (st.risk_level === 'low' || st.risk_level === 'monitored'));
       return matchSearch && matchLevel;
     });
-  }, [studentsQuery.data, defaultAtRiskStudents, search, levelFilter]);
-
-  const summary = analyticsQuery.data;
+  }, [rawStudents, search, levelFilter]);
 
   return (
     <WebDashboardLayout
       title={isRTL ? 'الطلاب في خطر' : 'At-Risk Students'}
-      subtitle={isRTL ? 'قائمة مُنشأة آلياً بواسطة الذكاء الاصطناعي · آخر تقييم: 2026-08-20' : 'AI-Assessed At-Risk Student Cases'}
+      subtitle={isRTL ? `قائمة مُنشأة آلياً بواسطة الذكاء الاصطناعي · آخر تقييم: ${lastAssessmentDate}` : `AI-Assessed At-Risk Student Cases · Last Evaluation: ${lastAssessmentDate}`}
     >
       <ScrollView
         style={[styles.container, isDark && styles.darkContainer]}
@@ -168,10 +134,10 @@ export default function AtRiskScreen() {
               <TouchableOpacity
                 style={[styles.primaryBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                 onPress={handleRunAssessment}
-                disabled={isAssessing}
+                disabled={runAssessmentMutation.isPending}
                 accessibilityRole="button"
               >
-                {isAssessing ? (
+                {runAssessmentMutation.isPending ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <>
@@ -205,7 +171,7 @@ export default function AtRiskScreen() {
               <View style={[styles.kpiInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Icon name="users" size={20} color="#2563EB" />
                 <AppText variant="h1" weight="bold" color="#2563EB">
-                  {(summary as any)?.total_cases ?? 18}
+                  {totalCasesCount}
                 </AppText>
               </View>
               <AppText variant="caption" color="#64748B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
@@ -217,7 +183,7 @@ export default function AtRiskScreen() {
               <View style={[styles.kpiInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Icon name="alertTriangle" size={20} color="#EF4444" />
                 <AppText variant="h1" weight="bold" color="#EF4444">
-                  {(summary as any)?.critical_cases ?? 0}
+                  {criticalCasesCount}
                 </AppText>
               </View>
               <AppText variant="caption" color="#64748B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
@@ -229,7 +195,7 @@ export default function AtRiskScreen() {
               <View style={[styles.kpiInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Icon name="alertTriangle" size={20} color="#F59E0B" />
                 <AppText variant="h1" weight="bold" color="#F59E0B">
-                  {(summary as any)?.medium_cases ?? 18}
+                  {mediumCasesCount}
                 </AppText>
               </View>
               <AppText variant="caption" color="#64748B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
@@ -241,7 +207,7 @@ export default function AtRiskScreen() {
               <View style={[styles.kpiInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Icon name="check" size={20} color="#10B981" />
                 <AppText variant="h1" weight="bold" color="#10B981">
-                  {(summary as any)?.resolved_cases ?? 0}
+                  {resolvedCasesCount}
                 </AppText>
               </View>
               <AppText variant="caption" color="#64748B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
@@ -273,7 +239,7 @@ export default function AtRiskScreen() {
                 onPress={() => setLevelFilter('all')}
               >
                 <AppText variant="captionBold" color={levelFilter === 'all' ? '#2563EB' : '#64748B'}>
-                  {isRTL ? 'الكل (18)' : 'All (18)'}
+                  {isRTL ? `الكل (${totalCasesCount})` : `All (${totalCasesCount})`}
                 </AppText>
               </TouchableOpacity>
 
@@ -282,7 +248,7 @@ export default function AtRiskScreen() {
                 onPress={() => setLevelFilter('high')}
               >
                 <AppText variant="captionBold" color={levelFilter === 'high' ? '#2563EB' : '#64748B'}>
-                  {isRTL ? 'خطر شديد (0)' : 'Critical (0)'}
+                  {isRTL ? `خطر شديد (${criticalCasesCount})` : `Critical (${criticalCasesCount})`}
                 </AppText>
               </TouchableOpacity>
 
@@ -291,7 +257,7 @@ export default function AtRiskScreen() {
                 onPress={() => setLevelFilter('medium')}
               >
                 <AppText variant="captionBold" color={levelFilter === 'medium' ? '#2563EB' : '#64748B'}>
-                  {isRTL ? 'متوسط (18)' : 'Medium (18)'}
+                  {isRTL ? `متوسط (${mediumCasesCount})` : `Medium (${mediumCasesCount})`}
                 </AppText>
               </TouchableOpacity>
 
@@ -300,7 +266,7 @@ export default function AtRiskScreen() {
                 onPress={() => setLevelFilter('monitored')}
               >
                 <AppText variant="captionBold" color={levelFilter === 'monitored' ? '#2563EB' : '#64748B'}>
-                  {isRTL ? 'مراقب (0)' : 'Monitored (0)'}
+                  {isRTL ? `مراقب (${monitoredCasesCount})` : `Monitored (${monitoredCasesCount})`}
                 </AppText>
               </TouchableOpacity>
             </ScrollView>
@@ -308,71 +274,84 @@ export default function AtRiskScreen() {
 
           {/* At Risk Cards List - Full Arabic RTL Layout */}
           <View style={styles.cardsList}>
-            {displayStudents.map((st) => {
-              const studentGrade = st.student_name?.includes('باسل')
-                ? (isRTL ? 'الأول المتوسط' : 'Grade 1 Intermediate')
-                : (st.grade_name || (st as any).grade || (isRTL ? 'الصف الأول الابتدائي' : 'Grade 1 Primary'));
+            {displayStudents.length === 0 ? (
+              <View style={[styles.studentAtRiskCard, isDark && styles.darkCard, { padding: 30, alignItems: 'center' }]}>
+                <Icon name="userCheck" size={36} color="#10B981" />
+                <AppText variant="subtitle" color="#64748B" style={{ marginTop: 10 }}>
+                  {isRTL ? 'لا يوجد طلاب في مرحلة الخطر' : 'No students at risk'}
+                </AppText>
+              </View>
+            ) : (
+              displayStudents.map((st) => {
+                const studentGrade = st.grade_name !== '—' ? st.grade_name : (isRTL ? 'الأول المتوسط' : 'Middle School');
 
-              return (
-                <View key={st.id} style={[styles.studentAtRiskCard, isDark && styles.darkCard]}>
-                  {/* Header Row: Avatar on RIGHT in RTL, Student details aligned RIGHT, Risk Badge on LEFT */}
-                  <View style={[styles.cardHeaderRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <View style={[styles.cardHeaderLeading, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                      <View style={styles.avatarBox}>
-                        <AppText variant="captionBold" color="#2563EB">
-                          {st.student_name ? st.student_name.charAt(0) : 'ف'}
-                        </AppText>
+                return (
+                  <View key={st.id} style={[styles.studentAtRiskCard, isDark && styles.darkCard]}>
+                    {/* Header Row: Avatar on RIGHT in RTL, Student details aligned RIGHT, Risk Badge on LEFT */}
+                    <View style={[styles.cardHeaderRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <View style={[styles.cardHeaderLeading, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                        <View style={styles.avatarBox}>
+                          <AppText variant="captionBold" color="#2563EB">
+                            {st.student_name ? st.student_name.charAt(0) : 'ط'}
+                          </AppText>
+                        </View>
+                        <View style={[styles.studentDetailsCol, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                          <AppText variant="bodyBold" color={isDark ? '#F8FAFC' : '#0F172A'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                            {st.student_name}
+                          </AppText>
+                          <AppText variant="caption" color="#94A3B8" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                            {studentGrade}{st.class_name && st.class_name !== '—' ? ` · ${st.class_name}` : ''}
+                          </AppText>
+                        </View>
                       </View>
-                      <View style={[styles.studentDetailsCol, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                        <AppText variant="bodyBold" color={isDark ? '#F8FAFC' : '#0F172A'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                          {st.student_name}
-                        </AppText>
-                        <AppText variant="caption" color="#94A3B8" style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                          {studentGrade} · {st.class_name || '1/أ'}
+
+                      <View style={st.risk_level === 'high' || st.risk_level === 'critical' ? styles.riskPillRed : styles.riskPillAmber}>
+                        <AppText variant="captionBold" color={st.risk_level === 'high' || st.risk_level === 'critical' ? '#DC2626' : '#D97706'}>
+                          {st.risk_level === 'high' || st.risk_level === 'critical' ? (isRTL ? 'خطر مرتفع' : 'High Risk') : (isRTL ? 'خطر متوسط' : 'Medium Risk')}
                         </AppText>
                       </View>
                     </View>
 
-                    <View style={styles.riskPillAmber}>
+                    {/* Risk Score Progress Row */}
+                    <View style={[styles.riskProgressRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <AppText variant="caption" color="#94A3B8">
+                        {isRTL ? 'مستوى الخطر' : 'Risk Level'}
+                      </AppText>
                       <AppText variant="captionBold" color="#D97706">
-                        {isRTL ? 'خطر متوسط' : 'Medium Risk'}
+                        {st.risk_score || 33}%
                       </AppText>
+                      <View style={styles.progressBarTrack}>
+                        <View style={[styles.progressBarFill, { width: `${st.risk_score || 33}%` }]} />
+                      </View>
                     </View>
-                  </View>
 
-                  {/* Risk Score Progress Row */}
-                  <View style={[styles.riskProgressRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <AppText variant="caption" color="#94A3B8">
-                      {isRTL ? 'مستوى الخطر' : 'Risk Level'}
-                    </AppText>
-                    <AppText variant="captionBold" color="#D97706">
-                      {st.risk_score || 33}%
-                    </AppText>
-                    <View style={styles.progressBarTrack}>
-                      <View style={[styles.progressBarFill, { width: `${st.risk_score || 33}%` }]} />
-                    </View>
-                  </View>
-
-                  {/* Alert Warning Banners */}
-                  <View style={styles.alertBannersCol}>
-                    <View style={styles.alertBannerAmber}>
-                      <AppText variant="caption" color="#92400E" style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                        ⚠️ 4 أيام غياب بدون عذر خلال 7 يوماً
-                      </AppText>
-                    </View>
-                    <View style={styles.alertBannerRed}>
-                      <AppText variant="caption" color="#991B1B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                        🚨 4 أيام غياب بدون عذر خلال 7 يوماً
-                      </AppText>
-                    </View>
-                  </View>
+                    {/* Alert Warning Banners */}
+                    {Array.isArray(st.reasons) && st.reasons.length > 0 ? (
+                      <View style={styles.alertBannersCol}>
+                        {st.reasons.map((reason: string, idx: number) => (
+                          <View key={idx} style={idx % 2 === 0 ? styles.alertBannerAmber : styles.alertBannerRed}>
+                            <AppText variant="caption" color={idx % 2 === 0 ? '#92400E' : '#991B1B'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                              {idx % 2 === 0 ? '⚠️ ' : '🚨 '}{reason}
+                            </AppText>
+                          </View>
+                        ))}
+                      </View>
+                    ) : (
+                      <View style={styles.alertBannersCol}>
+                        <View style={styles.alertBannerAmber}>
+                          <AppText variant="caption" color="#92400E" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                            ⚠️ {st.absence_days || 0} {isRTL ? 'أيام غياب بدون عذر' : 'unexcused absence days'}
+                          </AppText>
+                        </View>
+                      </View>
+                    )}
 
                   {/* Metrics Row & Action Buttons */}
                   <View style={[styles.metricsActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <View style={[styles.metricsNumbersGroup, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                       <View style={styles.metricItem}>
                         <AppText variant="captionBold" color="#EF4444">
-                          {st.absence_days ?? 4}
+                          {st.absence_days ?? st.absent_days ?? 0}
                         </AppText>
                         <AppText variant="caption" color="#94A3B8">
                           {isRTL ? 'أيام الغياب' : 'Absence Days'}
@@ -421,12 +400,13 @@ export default function AtRiskScreen() {
                       {isRTL ? 'ولي الأمر:' : 'Guardian:'} {st.guardian_name || 'صالح'}
                     </AppText>
                     <AppText variant="caption" color="#64748B">
-                      {isRTL ? 'تاريخ التقييم:' : 'Evaluation Date:'} {st.assessment_date || '2026-08-20'}
+                      {isRTL ? 'تاريخ التقييم:' : 'Evaluation Date:'} {st.assessment_date || lastAssessmentDate}
                     </AppText>
                   </View>
                 </View>
               );
-            })}
+            })
+          )}
           </View>
         </View>
       </ScrollView>
@@ -650,6 +630,12 @@ const styles = StyleSheet.create({
   },
   riskPillAmber: {
     backgroundColor: '#FEF3C7',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  riskPillRed: {
+    backgroundColor: '#FEE4E2',
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 10,
