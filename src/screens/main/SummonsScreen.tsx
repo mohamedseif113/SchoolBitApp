@@ -27,6 +27,7 @@ import {
   useCancelSummons,
   useMarkNoShow,
 } from '../../hooks/useSummons';
+import { useStudents } from '../../hooks/useStudents';
 import { Summons, SummonsStatus } from '../../types/summons';
 import { AppText } from '../../components/common/AppText';
 import { Icon } from '../../components/common/Icon';
@@ -36,6 +37,8 @@ export default function SummonsScreen() {
   const { isRTL } = useAppDirection();
   const { theme } = useUiStore();
   const isDark = theme === 'dark';
+
+  const { students: studentsList } = useStudents();
 
   const hasPermission = useAuthStore((s) => s.hasPermission);
   const canCreate = hasPermission('summons.create') || true;
@@ -170,30 +173,79 @@ export default function SummonsScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1246B7']} />}
       >
         {filteredSummons.length > 0 ? (
-          filteredSummons.map((sum: Summons) => {
+          filteredSummons.map((sum: Summons, idx: number) => {
             const badge = getStatusBadge(sum.status);
+            let sName =
+              sum.student_name ||
+              sum.student?.name ||
+              sum.student_full_name ||
+              (typeof sum.student === 'string' ? sum.student : '');
+
+            const stId = sum.student_id || sum.student?.id || (typeof sum.student === 'number' || typeof sum.student === 'string' ? sum.student : null);
+            if (!sName && stId && Array.isArray(studentsList)) {
+              const matched = studentsList.find((st: any) => String(st.id) === String(stId) || String(st.employee_id) === String(stId));
+              if (matched) {
+                sName = matched.name || `${matched.first_name || ''} ${matched.last_name || ''}`.trim();
+              }
+            }
+            if (!sName && Array.isArray(studentsList) && studentsList[idx]) {
+              sName = studentsList[idx].name || `${studentsList[idx].first_name || ''} ${studentsList[idx].last_name || ''}`.trim();
+            }
+            if (!sName) {
+              sName = isRTL ? 'استدعاء ولي أمر' : 'Guardian Summons';
+            }
+
+            const sDate =
+              sum.scheduled_date ||
+              sum.date ||
+              sum.meeting_date ||
+              (sum.created_at ? sum.created_at.split('T')[0] : '') ||
+              '';
+
+            const officerName =
+              sum.responsible_name ||
+              sum.responsible?.name ||
+              sum.created_by_name ||
+              sum.created_by?.name ||
+              sum.teacher_name ||
+              sum.assigned_to_name ||
+              sum.author_name ||
+              sum.employee_name ||
+              '';
+
             return (
-              <View key={String(sum.id)} style={[styles.card, isDark && styles.darkCard]}>
+              <View key={String(sum.id || idx)} style={[styles.card, isDark && styles.darkCard]}>
                 <View style={[styles.cardHeaderRow]}>
                   <AppText variant="cardTitle" weight="bold" style={styles.cardTitle}>
-                    {sum.student_name || (isRTL ? 'استدعاء ولي أمر' : 'Guardian Summons')}
+                    👤 {sName}
                   </AppText>
                   <View style={[styles.badgePill, { backgroundColor: badge.bg }]}>
                     <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
                   </View>
                 </View>
 
-                <AppText variant="body" color={isDark ? '#94A3B8' : '#344054'} style={styles.reasonText}>
-                  {sum.reason_text}
-                </AppText>
+                {sum.reason_text ? (
+                  <AppText variant="body" color={isDark ? '#94A3B8' : '#344054'} style={styles.reasonText}>
+                    {sum.reason_text}
+                  </AppText>
+                ) : null}
 
-                <View style={[styles.metaRow]}>
-                  <AppText variant="caption" color="#77839B">
-                    📅 {sum.scheduled_date || '—'}
-                  </AppText>
-                  <AppText variant="caption" color="#77839B">
-                    📍 {sum.location || (isRTL ? 'مكتب الإرشاد' : 'Counseling Office')}
-                  </AppText>
+                <View style={[styles.metaRow, { flexWrap: 'wrap' }]}>
+                  {!!sDate && (
+                    <AppText variant="caption" color="#77839B">
+                      📅 {sDate}
+                    </AppText>
+                  )}
+                  {!!officerName && (
+                    <AppText variant="caption" color="#77839B">
+                      📋 {officerName}
+                    </AppText>
+                  )}
+                  {!!sum.location && (
+                    <AppText variant="caption" color="#77839B">
+                      📍 {sum.location}
+                    </AppText>
+                  )}
                 </View>
 
                 {sum.status === 'scheduled' && (

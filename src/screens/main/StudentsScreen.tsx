@@ -23,6 +23,7 @@ import { shadows } from '../../theme/spacing';
 import { useAuthStore } from '../../store/auth.store';
 import { useUiStore } from '../../store/uiStore';
 import { useStudents } from '../../hooks/useStudents';
+import { useAtRiskStudents } from '../../hooks/useAtRisk';
 import { useCreateSummons } from '../../hooks/useSummons';
 import { Student } from '../../types/student';
 import { AppText } from '../../components/common/AppText';
@@ -122,16 +123,34 @@ export default function StudentsScreen() {
     isDeleting,
   } = useStudents({ search: debouncedSearch });
 
+  const atRiskQuery = useAtRiskStudents();
+  const atRiskList = Array.isArray(atRiskQuery.data) ? atRiskQuery.data : [];
+  const atRiskSet = useMemo(() => {
+    const set = new Set<string>();
+    atRiskList.forEach((st: any) => {
+      if (st.id != null) set.add(String(st.id));
+      if (st.student_id != null) set.add(String(st.student_id));
+      if (st.student?.id != null) set.add(String(st.student.id));
+      if (st.national_id != null) set.add(String(st.national_id));
+      if (st.student?.national_id != null) set.add(String(st.student.national_id));
+      if (st.student_number != null) set.add(String(st.student_number));
+      if (st.student_name != null) set.add(String(st.student_name).trim().toLowerCase());
+      if (st.student?.name != null) set.add(String(st.student.name).trim().toLowerCase());
+      if (st.name != null) set.add(String(st.name).trim().toLowerCase());
+    });
+    return set;
+  }, [atRiskList]);
+
   const createSummonsMutation = useCreateSummons();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await refetch();
+      await Promise.all([refetch(), atRiskQuery.refetch()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refetch]);
+  }, [refetch, atRiskQuery]);
 
   // Default classes list
   const initialClassGroups: ClassGroupItem[] = useMemo(
@@ -315,9 +334,15 @@ export default function StudentsScreen() {
         gpa = `${gpa}%`;
       }
 
-      // Status normalization
+      // Status normalization using Real API at-risk dataset
       const rawStatus = String(st.status || '').toLowerCase();
       const isAtRiskStudent =
+        atRiskSet.has(String(st.id)) ||
+        atRiskSet.has(String(st.student_id)) ||
+        atRiskSet.has(String(st.employee_id)) ||
+        atRiskSet.has(String(nationalId)) ||
+        atRiskSet.has(String(studentNum)) ||
+        atRiskSet.has(name.trim().toLowerCase()) ||
         rawStatus === 'at_risk' ||
         rawStatus === 'follow_up' ||
         rawStatus === 'متابعة' ||
@@ -327,10 +352,9 @@ export default function StudentsScreen() {
         st.is_at_risk === true ||
         st.at_risk === true ||
         (st.violations_count && Number(st.violations_count) > 0) ||
-        (st.incidents_count && Number(st.incidents_count) > 0) ||
-        (rawStatus !== 'normal' && rawStatus !== 'active' && rawStatus !== 'طبيعي' && rawStatus !== 'excellent' && rawStatus !== 'outstanding' && rawStatus !== '' && rawStatus !== '—');
+        (st.incidents_count && Number(st.incidents_count) > 0);
 
-      const normalizedStatus = isAtRiskStudent ? 'at_risk' : (st.status || 'normal');
+      const normalizedStatus = isAtRiskStudent ? 'at_risk' : (st.status && st.status !== 'at_risk' ? st.status : 'normal');
 
       return {
         ...st,
@@ -349,13 +373,13 @@ export default function StudentsScreen() {
         notes_count: st.notes_count ?? st.comments_count ?? 0,
       };
     });
-  }, [apiStudents]);
+  }, [apiStudents, atRiskSet]);
 
   const statusKpis = useMemo(() => {
     const outstanding = allStudents.filter((s) => s.status === 'excellent' || s.status === 'outstanding').length;
-    const normal = allStudents.filter((s) => s.status === 'active' || s.status === 'normal' || (!s.status && (!s.violations_count || s.violations_count === 0))).length;
-    const followUp = allStudents.filter((s) => s.status === 'at_risk' || s.status === 'follow_up' || (s.violations_count && s.violations_count > 0)).length;
+    const followUp = allStudents.filter((s) => s.status === 'at_risk' || s.status === 'follow_up').length;
     const atRisk = allStudents.filter((s) => s.status === 'critical' || s.status === 'danger').length;
+    const normal = Math.max(0, allStudents.length - outstanding - followUp - atRisk);
     return { outstanding, normal, followUp, atRisk };
   }, [allStudents]);
 

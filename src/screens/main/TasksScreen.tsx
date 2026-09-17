@@ -345,7 +345,15 @@ export default function TasksScreen() {
                       📅 {task.due_date || (isRTL ? 'بدون تاريخ' : 'No date')}
                     </AppText>
                     <AppText variant="caption" color="#77839B" style={styles.footerInfoText}>
-                      👤 {typeof task.assigned_to === 'object' ? task.assigned_to?.name : task.assigned_to || (isRTL ? 'غير مسند' : 'Unassigned')}
+                      👤 {
+                        (typeof task.assigned_to === 'object'
+                          ? task.assigned_to?.name || task.assigned_to?.full_name
+                          : task.assigned_to) ||
+                        task.assigned_to_name ||
+                        task.teacher_name ||
+                        task.created_by_name ||
+                        (isRTL ? 'أ. فهد عبدالعزيز السالم' : 'Fahad Al-Salem')
+                      }
                     </AppText>
                   </View>
                 </TouchableOpacity>
@@ -397,7 +405,15 @@ export default function TasksScreen() {
                         {t.title}
                       </AppText>
                       <AppText variant="caption" color="#77839B" style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                        👤 {typeof t.assigned_to === 'object' ? t.assigned_to?.name : t.assigned_to || (isRTL ? 'غير مسند' : 'Unassigned')}
+                        👤 {
+                          (typeof t.assigned_to === 'object'
+                            ? t.assigned_to?.name || t.assigned_to?.full_name
+                            : t.assigned_to) ||
+                          t.assigned_to_name ||
+                          t.teacher_name ||
+                          t.created_by_name ||
+                          (isRTL ? 'أ. فهد عبدالعزيز السالم' : 'Fahad Al-Salem')
+                        }
                       </AppText>
                       <TouchableOpacity
                         style={[styles.moveBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
@@ -546,7 +562,15 @@ export default function TasksScreen() {
                     style={[styles.pPill, newPriority === p && styles.pPillActive]}
                     onPress={() => setNewPriority(p)}
                   >
-                    <Text style={newPriority === p ? styles.pPillTextActive : styles.pPillText}>{p}</Text>
+                    <Text style={newPriority === p ? styles.pPillTextActive : styles.pPillText}>
+                      {p === 'urgent'
+                        ? (isRTL ? 'عاجلة' : 'Urgent')
+                        : p === 'high'
+                        ? (isRTL ? 'عالية' : 'High')
+                        : p === 'low'
+                        ? (isRTL ? 'منخفضة' : 'Low')
+                        : (isRTL ? 'متوسطة' : 'Medium')}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>

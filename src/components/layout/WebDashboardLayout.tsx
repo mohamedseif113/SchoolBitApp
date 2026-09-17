@@ -23,6 +23,7 @@ import { useDashboard } from '../../hooks/useDashboard';
 import { useAppDirection } from '../../hooks/useAppDirection';
 import { useNavigationLoading } from '../../store/useNavigationLoading';
 import { ibmPlexArabicFontFamily } from '../../theme/typography';
+import { getRoleDisplayName } from '../../constants/roles';
 import { AppText } from '../common/AppText';
 import { Icon, IconName } from '../common/Icon';
 import { PageSkeletonSelector } from '../skeletons/PageSkeletons';
@@ -184,14 +185,18 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
     normalizedRole.includes('principal') ||
     normalizedRole.includes('manager');
 
+  const schoolNameDisplay = useMemo(() => {
+    return school?.name || (user as any)?.school_name || (user as any)?.school?.name || (user as any)?.tenant_name || (user as any)?.tenant?.name || '';
+  }, [school, user]);
+
   const userRoleDisplay = useMemo(() => {
-    if (user?.role_title) return user.role_title;
-    if (user?.role_name) return user.role_name;
+    const rawRole = user?.role_title || user?.role_name || user?.role || role;
+    if (rawRole) return getRoleDisplayName(rawRole, isRTL ? 'ar' : 'en');
     if (isVicePrincipal) return isRTL ? 'وكيل المدرسة' : 'Vice Principal';
     if (isCounselor) return isRTL ? 'المرشد الطلابي' : 'Student Counselor';
     if (isTeacher) return isRTL ? 'معلم' : 'Teacher';
-    return isRTL ? 'مدير المدرسة' : 'School Principal';
-  }, [user, isVicePrincipal, isCounselor, isTeacher, isRTL]);
+    return isRTL ? 'قائد المدرسة' : 'School Principal';
+  }, [user, role, isVicePrincipal, isCounselor, isTeacher, isRTL]);
 
   const userNameDisplay = useMemo(() => {
     return user?.name || (isVicePrincipal ? (isRTL ? 'فهد عبدالعزيز السالم' : 'Fahad Abdulaziz Al-Salem') : isCounselor ? (isRTL ? 'سعد إبراهيم الناصر' : 'Saad Ibrahim Al-Nasser') : isTeacher ? (isRTL ? 'معلم' : 'Teacher') : (isRTL ? 'فهد عبدالعزيز السالم' : 'Fahad Abdulaziz Al-Salem'));
@@ -514,7 +519,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
             labelAr: 'المواد الدراسية',
             labelEn: 'Subjects',
             route: '/academic?tab=subjects',
-            screenName: 'Schedule',
+            screenName: 'Academic',
             params: { tab: 'subjects' },
             icon: 'fileText',
             permission: 'schedule.view',
@@ -524,7 +529,8 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
             labelAr: 'الجدول الدراسي',
             labelEn: 'Class Schedule',
             route: '/schedule',
-            screenName: 'Schedule',
+            screenName: 'Academic',
+            params: { tab: 'timetable' },
             icon: 'calendar',
             permission: 'schedule.view',
           },
@@ -533,7 +539,8 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
             labelAr: 'الواجبات المدرسية',
             labelEn: 'Homework',
             route: '/homework',
-            screenName: 'Homework',
+            screenName: 'Academic',
+            params: { tab: 'homework' },
             icon: 'edit',
             permission: 'homework.assignment.view',
           },
@@ -542,7 +549,8 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
             labelAr: 'توزيع الاختبارات',
             labelEn: 'Exam Distribution',
             route: '/examdist',
-            screenName: 'ExamDistribution',
+            screenName: 'Academic',
+            params: { tab: 'exam_dist' },
             icon: 'grid',
             permission: 'exams.view',
           },
@@ -551,7 +559,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
             labelAr: 'أرقام الجلوس',
             labelEn: 'Seat Numbers',
             route: '/seatnums',
-            screenName: 'ExamDistribution',
+            screenName: 'Academic',
             params: { tab: 'seats' },
             icon: 'users',
             permission: 'exams.view',
@@ -911,11 +919,8 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
           </View>
           <View style={[styles.brandTextGroup, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
             <View style={[styles.brandTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <AppText variant="cardTitle" weight="bold" color="#FFFFFF" style={styles.brandTitleWhite}>
-                school
-              </AppText>
-              <AppText variant="cardTitle" weight="bold" color="#38BDF8" style={styles.brandTitleBlue}>
-                Bit
+              <AppText variant="cardTitle" weight="bold" color="#FFFFFF" style={styles.brandTitleWhite} numberOfLines={1}>
+                {schoolNameDisplay}
               </AppText>
             </View>
             <AppText variant="caption" color="#8EA2C6" style={styles.brandSubtitle} numberOfLines={1}>

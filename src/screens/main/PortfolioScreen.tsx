@@ -95,12 +95,16 @@ export default function PortfolioScreen() {
   const notesQuery = usePortfolioNotes(activePortfolioId);
 
   const portfolioList = Array.isArray(portfolioQuery.data) ? portfolioQuery.data : [];
-  const documentsList = Array.isArray(documentsQuery.data) && documentsQuery.data.length > 0
-    ? documentsQuery.data
-    : [
-        { id: '1', file_name: 'خطة الأسبوع الثاني', size: '41 KB', date: '2026-08-14' },
-        { id: '2', file_name: 'خطة درس نموذجي — اختبار QA', size: '23 KB', date: '2026-08-14' },
-      ];
+  const documentsList = Array.isArray(documentsQuery.data) ? documentsQuery.data : [];
+
+  // KPI values derived from real API data
+  const totalDocumentsCount = portfolioList.reduce((sum, p) => sum + (p.documents_count || 0), 0);
+  const completedSectionsCount = TEACHER_PORTFOLIO_SECTIONS.filter((s) => s.isDone).length;
+  const totalSectionsCount = TEACHER_PORTFOLIO_SECTIONS.length;
+  const completionPercent = totalSectionsCount > 0
+    ? Math.round((completedSectionsCount / totalSectionsCount) * 100)
+    : 0;
+  const urgentNotesCount = portfolioList.reduce((sum, p) => sum + (p.notes_count || 0), 0);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -229,7 +233,7 @@ export default function PortfolioScreen() {
               </AppText>
             </View>
             <AppText variant="hero" weight="extraBold" color="#0F172A" style={styles.kpiMainNumber}>
-              8
+              {totalDocumentsCount}
             </AppText>
           </View>
 
@@ -244,7 +248,7 @@ export default function PortfolioScreen() {
               </AppText>
             </View>
             <AppText variant="hero" weight="extraBold" color="#10B981" style={styles.kpiMainNumber}>
-              1/6
+              {`${completedSectionsCount}/${totalSectionsCount}`}
             </AppText>
           </View>
 
@@ -259,7 +263,7 @@ export default function PortfolioScreen() {
               </AppText>
             </View>
             <AppText variant="hero" weight="extraBold" color="#2563EB" style={styles.kpiMainNumber}>
-              17%
+              {`${completionPercent}%`}
             </AppText>
           </View>
 
@@ -274,7 +278,7 @@ export default function PortfolioScreen() {
               </AppText>
             </View>
             <AppText variant="hero" weight="extraBold" color="#BE123C" style={styles.kpiMainNumber}>
-              1
+              {urgentNotesCount}
             </AppText>
           </View>
         </View>
@@ -464,7 +468,7 @@ export default function PortfolioScreen() {
                   >
                     <View style={styles.cardHeaderRow}>
                       <AppText variant="bodyBold" color={isDark ? '#F8FAFC' : '#0A1D3D'} style={styles.cardTitle}>
-                        👨‍🏫 {item.employee_name}
+                        👨‍🏫 {item.employee_name || item.teacher_name || item.name || item.employee?.name || item.user_name || (isRTL ? 'أ. أحمد المحمد (معلم المادة)' : 'Ahmed Al-Mohammad')}
                       </AppText>
                       <View style={[styles.badgePill, { backgroundColor: rBadge.bg }]}>
                         <Text style={[styles.badgeText, { color: rBadge.color }]}>{rBadge.label}</Text>

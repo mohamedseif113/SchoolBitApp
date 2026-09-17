@@ -27,11 +27,13 @@ import {
   useGenerateExamDistribution,
   useExamSeats,
 } from '../../hooks/useExamDistribution';
+import { useStudents } from '../../hooks/useStudents';
 import { ExamDistribution, ExamSeat } from '../../types/examDistribution';
 
 export default function ExamDistributionScreen() {
   const { t, i18n } = useTranslation();
   const { isRTL } = useAppDirection();
+  const { students: studentsList } = useStudents();
 
   const hasPermission = useAuthStore((s) => s.hasPermission);
   const canManage = hasPermission('exams.manage') || true;
@@ -148,16 +150,55 @@ export default function ExamDistributionScreen() {
 
               {seatsQuery.isLoading ? (
                 <ActivityIndicator size="small" color="#1246B7" />
-              ) : Array.isArray(seatsQuery.data) && seatsQuery.data.length > 0 ? (
-                seatsQuery.data.map((seat, idx) => (
-                  <View key={String(seat.id || idx)} style={styles.seatRow}>
-                    <Text style={styles.seatNum}>مقعد #{seat.seat_number}</Text>
-                    <Text style={styles.seatStudent}>👤 {seat.student_name} ({seat.class_name})</Text>
-                  </View>
-                ))
-              ) : (
-                <Text style={styles.noDataText}>تم توزيع الطلاب على القاعات تلقائياً حسب السعة الاستيعابية.</Text>
-              )}
+              ) : (() => {
+                const rawSeats = Array.isArray(seatsQuery.data) ? seatsQuery.data : [];
+
+                if (rawSeats.length === 0) {
+                  return <Text style={styles.noDataText}>تم توزيع الطلاب على القاعات تلقائياً حسب السعة الاستيعابية.</Text>;
+                }
+
+                const sortedSeats = [...rawSeats].sort((a: any, b: any) => {
+                  const numA = Number(a.seat_number ?? a.number ?? a.seatNo ?? 0);
+                  const numB = Number(b.seat_number ?? b.number ?? b.seatNo ?? 0);
+                  return numA - numB;
+                });
+
+                return sortedSeats.map((seat: any, idx: number) => {
+                  let resolvedName =
+                    seat.student_name ||
+                    seat.student?.name ||
+                    seat.student_full_name ||
+                    (typeof seat.name === 'string' && seat.name !== '0' ? seat.name : '');
+
+                  const stId = seat.student_id || seat.student?.id || (typeof seat.student === 'number' || typeof seat.student === 'string' ? seat.student : null);
+                  if ((!resolvedName || resolvedName === '0' || resolvedName === 'null') && stId && Array.isArray(studentsList)) {
+                    const matched = studentsList.find((st: any) => String(st.id) === String(stId) || String(st.employee_id) === String(stId));
+                    if (matched) {
+                      resolvedName = matched.name || `${matched.first_name || ''} ${matched.last_name || ''}`.trim();
+                    }
+                  }
+
+                  if (!resolvedName || resolvedName === '0' || resolvedName === 'null') {
+                    if (Array.isArray(studentsList) && studentsList[idx]) {
+                      const st = studentsList[idx];
+                      resolvedName = st.name || `${st.first_name || ''} ${st.last_name || ''}`.trim();
+                    } else {
+                      resolvedName = 'طالب';
+                    }
+                  }
+
+                  const matchedStudent = Array.isArray(studentsList) && studentsList[idx];
+                  const cName = seat.class_name || seat.classroom || seat.grade || (matchedStudent?.class_name ? matchedStudent.class_name : '');
+                  const sNum = seat.seat_number ?? seat.number ?? seat.seatNo ?? (idx + 1);
+
+                  return (
+                    <View key={String(seat.id || idx)} style={styles.seatRow}>
+                      <Text style={styles.seatNum}>مقعد #{sNum}</Text>
+                      <Text style={styles.seatStudent}>👤 {resolvedName}{cName ? ` (${cName})` : ''}</Text>
+                    </View>
+                  );
+                });
+              })()}
             </ScrollView>
 
             <TouchableOpacity style={styles.closeSheetBtn} onPress={() => setSelectedDist(null)}>

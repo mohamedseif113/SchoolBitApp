@@ -265,10 +265,26 @@ export const REPRESENTATIVE_TITLES: RepresentativeTitle[] = [
 /**
  * Get display name for a role in requested language ('ar' or 'en')
  */
-export function getRoleDisplayName(role: UserRole, lang: 'ar' | 'en' = 'ar'): string {
-  const info = USER_ROLES[role];
-  if (!info) return role;
-  return lang === 'ar' ? info.nameAr : info.nameEn;
+export function getRoleDisplayName(role: any, lang: 'ar' | 'en' = 'ar'): string {
+  if (!role) return lang === 'ar' ? 'مستخدم' : 'User';
+  const normalizedKey = String(role).toLowerCase().trim() as UserRole;
+  const info = USER_ROLES[normalizedKey];
+  if (info) {
+    return lang === 'ar' ? info.nameAr : info.nameEn;
+  }
+  if (normalizedKey.includes('principal') || normalizedKey.includes('manager') || normalizedKey.includes('director')) {
+    return lang === 'ar' ? 'قائد المدرسة' : 'School Principal';
+  }
+  if (normalizedKey.includes('admin')) {
+    return lang === 'ar' ? 'مدير المدرسة' : 'School Administrator';
+  }
+  if (normalizedKey.includes('teacher')) {
+    return lang === 'ar' ? 'معلم' : 'Teacher';
+  }
+  if (normalizedKey.includes('counselor') || normalizedKey.includes('guide')) {
+    return lang === 'ar' ? 'موجه طلابي' : 'Student Counselor';
+  }
+  return String(role);
 }
 
 /**

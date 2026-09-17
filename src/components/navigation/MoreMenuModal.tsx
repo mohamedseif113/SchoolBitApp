@@ -27,6 +27,7 @@ export interface MenuItem {
 }
 
 export const SECONDARY_MENU_ITEMS: MenuItem[] = [
+  { routeName: 'Academic', labelKey: 'navigation.academic', defaultLabel: 'البنية الأكاديمية', icon: 'school', permission: 'academic.view' },
   { routeName: 'Schedule', labelKey: 'navigation.schedule', defaultLabel: 'الجدول الدراسي', icon: 'calendar', permission: 'schedule.view' },
   { routeName: 'Messages', labelKey: 'navigation.messaging', defaultLabel: 'الرسائل والتنبيهات', icon: 'message', permission: 'messages.view' },
   { routeName: 'Reports', labelKey: 'navigation.reports', defaultLabel: 'التقارير والإحصائيات', icon: 'chart', permission: 'reports.view' },
@@ -44,6 +45,7 @@ export const SECONDARY_MENU_ITEMS: MenuItem[] = [
   { routeName: 'WhatsApp', labelKey: 'navigation.whatsapp', defaultLabel: 'بوابة الواتساب', icon: 'phone', permission: 'whatsapp.manage' },
   { routeName: 'Settings', labelKey: 'navigation.settings', defaultLabel: 'الإعدادات', icon: 'settings' },
 ];
+
 
 interface MoreMenuModalProps {
   visible: boolean;

@@ -26,6 +26,7 @@ import NoorIntegrationScreen from '../screens/main/NoorIntegrationScreen';
 import IntegrationsScreen from '../screens/main/IntegrationsScreen';
 import WhatsAppScreen from '../screens/main/WhatsAppScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
+import AcademicScreen from '../screens/main/AcademicScreen';
 
 import MoreMenuModal from '../components/navigation/MoreMenuModal';
 import PermissionGuard from '../components/auth/PermissionGuard';
@@ -341,6 +342,10 @@ export default function AppNavigator() {
         </Stack.Screen>
         <Stack.Screen name="Noor">
           {() => <PermissionGuard permission="settings.manage"><NoorIntegrationScreen /></PermissionGuard>}
+        </Stack.Screen>
+        {/* Academic Section */}
+        <Stack.Screen name="Academic">
+          {() => <PermissionGuard permissions={['academic.view', 'schedule.view', 'exams.view', 'homework.assignment.view']}><AcademicScreen /></PermissionGuard>}
         </Stack.Screen>
         {/* Official API: no specific permission required for Integrations */}
         <Stack.Screen name="Integrations" component={IntegrationsScreen} />

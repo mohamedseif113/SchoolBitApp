@@ -57,6 +57,18 @@ export function useCreateEmployee() {
   });
 }
 
+export function useUpdateEmployee() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string | number; payload: Partial<CreateEmployeePayload> }) =>
+      updateEmployee(id, payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['hr', 'employees'] });
+      queryClient.invalidateQueries({ queryKey: ['hr', 'employee', variables.id] });
+    },
+  });
+}
+
 export function useDeleteEmployee() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -20,6 +20,7 @@ import { useUiStore } from '../../store/uiStore';
 import { useAppDirection } from '../../hooks/useAppDirection';
 import { AppText } from '../../components/common/AppText';
 import { Icon } from '../../components/common/Icon';
+import { getRoleDisplayName } from '../../constants/roles';
 
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
@@ -34,16 +35,16 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     Alert.alert(
-      t('auth.logout', 'تسجيل الخروج'),
-      t('auth.logout_confirm', 'هل أنت متأكد أنك تريد تسجيل الخروج؟'),
+      t('common.logout', 'تسجيل الخروج'),
+      isRTL ? 'هل أنت تأكد من إغلاق الجلسة والتعليمات الأخيرة؟' : 'Are you sure you want to sign out?',
       [
         { text: t('common.cancel', 'إلغاء'), style: 'cancel' },
         {
-          text: t('auth.logout', 'تسجيل الخروج'),
+          text: t('common.confirm', 'تأكيد الخروج'),
           style: 'destructive',
           onPress: async () => {
-            await logout();
             queryClient.clear();
+            await logout();
           },
         },
       ]
@@ -78,12 +79,14 @@ export default function SettingsScreen() {
               {user?.email || 'user@school.sa'}
             </AppText>
             <View style={[styles.roleBadgeContainer]}>
-              <AppText variant="captionBold" color="#1246B7" style={styles.schoolName}>
-                {school?.name || 'SchoolBit'}
-              </AppText>
+              {(school?.name || (user as any)?.school_name || (user as any)?.school?.name || (user as any)?.tenant_name) && (
+                <AppText variant="captionBold" color="#1246B7" style={styles.schoolName}>
+                  {school?.name || (user as any)?.school_name || (user as any)?.school?.name || (user as any)?.tenant_name}
+                </AppText>
+              )}
               {role && (
                 <View style={styles.rolePill}>
-                  <Text style={styles.rolePillText}>{String(role).toUpperCase()}</Text>
+                  <Text style={styles.rolePillText}>{getRoleDisplayName(role, isRTL ? 'ar' : 'en')}</Text>
                 </View>
               )}
             </View>

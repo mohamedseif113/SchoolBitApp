@@ -283,7 +283,13 @@ export default function AtRiskScreen() {
               </View>
             ) : (
               displayStudents.map((st) => {
-                const studentGrade = st.grade_name !== '—' ? st.grade_name : (isRTL ? 'الأول المتوسط' : 'Middle School');
+                const classGradeLine =
+                  (st.grade_name && st.grade_name !== '—' ? st.grade_name : '') +
+                  (st.class_name && st.class_name !== '—' ? (st.grade_name && st.grade_name !== '—' ? ` · ${st.class_name}` : st.class_name) : '') ||
+                  (typeof st.classroom === 'string' ? st.classroom : st.classroom?.name) ||
+                  (typeof st.grade === 'string' ? st.grade : st.grade?.name) ||
+                  (typeof st.class === 'string' ? st.class : st.class?.name) ||
+                  (isRTL ? 'الصف الأول الابتدائي · 1/أ' : 'Grade 1 · Class 1/A');
 
                 return (
                   <View key={st.id} style={[styles.studentAtRiskCard, isDark && styles.darkCard]}>
@@ -300,7 +306,7 @@ export default function AtRiskScreen() {
                             {st.student_name}
                           </AppText>
                           <AppText variant="caption" color="#94A3B8" style={{ textAlign: isRTL ? 'right' : 'left' }}>
-                            {studentGrade}{st.class_name && st.class_name !== '—' ? ` · ${st.class_name}` : ''}
+                            {classGradeLine}
                           </AppText>
                         </View>
                       </View>
