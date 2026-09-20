@@ -272,6 +272,9 @@ export function getRoleDisplayName(role: any, lang: 'ar' | 'en' = 'ar'): string 
   if (info) {
     return lang === 'ar' ? info.nameAr : info.nameEn;
   }
+  if (normalizedKey.includes('vice') || normalizedKey.includes('assistant') || normalizedKey.includes('deputy') || normalizedKey.includes('وكيل')) {
+    return lang === 'ar' ? 'وكيل المدرسة' : 'Vice Principal';
+  }
   if (normalizedKey.includes('principal') || normalizedKey.includes('manager') || normalizedKey.includes('director')) {
     return lang === 'ar' ? 'مدير المدرسة' : 'School Principal';
   }

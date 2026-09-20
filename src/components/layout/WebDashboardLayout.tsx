@@ -190,11 +190,11 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
   }, [school, user]);
 
   const userRoleDisplay = useMemo(() => {
-    const rawRole = user?.role_title || user?.role_name || user?.role || role;
-    if (rawRole) return getRoleDisplayName(rawRole, isRTL ? 'ar' : 'en');
     if (isVicePrincipal) return isRTL ? 'وكيل المدرسة' : 'Vice Principal';
     if (isCounselor) return isRTL ? 'المرشد الطلابي' : 'Student Counselor';
     if (isTeacher) return isRTL ? 'معلم' : 'Teacher';
+    const rawRole = user?.role_title || user?.role_name || user?.role || role;
+    if (rawRole) return getRoleDisplayName(rawRole, isRTL ? 'ar' : 'en');
     return isRTL ? 'مدير المدرسة' : 'School Principal';
   }, [user, role, isVicePrincipal, isCounselor, isTeacher, isRTL]);
 
