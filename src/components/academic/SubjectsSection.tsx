@@ -16,6 +16,7 @@ import { useSubjects, useCreateSubject, useUpdateSubject, useDeleteSubject } fro
 import { Subject } from '../../types/subject';
 import { ibmPlexArabicFontFamily } from '../../theme/typography';
 import { shadows } from '../../theme/spacing';
+import { SkeletonList } from '../common/Skeleton';
 
 const STAGES = [
   {
@@ -268,9 +269,7 @@ export const SubjectsSection: React.FC<Props> = ({ isDark = false }) => {
 
       {/* ── Subject List Rows (Exact Web Match) ── */}
       {subjectsQuery.isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2563EB" />
-        </View>
+        <SkeletonList count={4} style={{ marginTop: 12 }} />
       ) : filteredSubjects.length === 0 ? (
         <View style={styles.emptyStateContainer}>
           <Text style={styles.emptyIcon}>📚</Text>

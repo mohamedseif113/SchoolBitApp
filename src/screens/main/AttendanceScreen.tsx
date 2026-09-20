@@ -20,6 +20,7 @@ import { useUiStore } from '../../store/uiStore';
 import { useAttendance } from '../../hooks/useAttendance';
 import { AppText } from '../../components/common/AppText';
 import { Icon } from '../../components/common/Icon';
+import { SkeletonList, SkeletonBlock } from '../../components/common/Skeleton';
 import { WebDashboardLayout } from '../../components/layout/WebDashboardLayout';
 
 import { useStudents } from '../../hooks/useStudents';
@@ -137,33 +138,22 @@ export default function AttendanceScreen() {
       else if (status === 'excused') excused++;
     });
 
-    const absentCount = summary?.absent_count != null
-      ? summary.absent_count
-      : (summary?.absent != null
-      ? summary.absent
-      : (summary?.absent_today != null
-      ? summary.absent_today
-      : (summary?.today_absent != null ? summary.today_absent : (absent > 0 ? absent : (total > 0 ? 18 : absent)))));
-
-    const presentCount = summary?.present != null
-      ? summary.present
-      : (summary?.present_today != null
-      ? summary.present_today
-      : (summary?.today_present != null ? summary.today_present : present));
-
-    const lateCount = summary?.late != null ? summary.late : (summary?.late_today != null ? summary.late_today : late);
-    const excusedCount = summary?.excused != null ? summary.excused : (summary?.excused_today != null ? summary.excused_today : excused);
+    const absentCount = summary?.absent_count ?? summary?.absent ?? summary?.absent_today ?? summary?.today_absent ?? absent;
+    const presentCount = summary?.present_count ?? summary?.present ?? summary?.present_today ?? summary?.today_present ?? present;
+    const lateCount = summary?.late_count ?? summary?.late ?? summary?.late_today ?? late;
+    const excusedCount = summary?.excused_count ?? summary?.excused ?? summary?.excused_today ?? excused;
+    const totalCount = summary?.total_students ?? summary?.total ?? total;
 
     return {
-      total: summary?.total || total,
+      total: totalCount,
       present: presentCount,
       absent: absentCount,
       late: lateCount,
       excused: excusedCount,
-      absentPercent: total > 0 ? Math.round((absentCount / total) * 100) : 0,
-      presentPercent: total > 0 ? Math.round((presentCount / total) * 100) : 0,
-      latePercent: total > 0 ? Math.round((lateCount / total) * 100) : 0,
-      excusedPercent: total > 0 ? Math.round((excusedCount / total) * 100) : 0,
+      absentPercent: totalCount > 0 ? Math.round((absentCount / totalCount) * 100) : 0,
+      presentPercent: totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0,
+      latePercent: totalCount > 0 ? Math.round((lateCount / totalCount) * 100) : 0,
+      excusedPercent: totalCount > 0 ? Math.round((excusedCount / totalCount) * 100) : 0,
     };
   }, [realStudents, studentStatuses, summary]);
 
@@ -572,7 +562,9 @@ export default function AttendanceScreen() {
               {/* SUB TAB VIEWS */}
               {subTab === 'daily' && (
                 <View style={styles.listCard}>
-                  {displayStudents.length === 0 ? (
+                  {(isLoading || isStudentsLoading) ? (
+                    <SkeletonList count={4} />
+                  ) : displayStudents.length === 0 ? (
                     <View style={styles.emptyStateContainer}>
                       <Icon name="search" size={32} color="#CBD5E1" />
                       <AppText variant="bodyBold" color="#64748B" style={{ marginTop: 8 }}>

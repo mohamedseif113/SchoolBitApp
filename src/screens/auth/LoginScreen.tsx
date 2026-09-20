@@ -247,8 +247,8 @@ export default function LoginScreen() {
             {/* Password Field with Forgot Password Link */}
             <View style={styles.fieldBlock}>
               <View style={[styles.labelRowWithLink, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <View style={[styles.labelRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <AppText variant="label" color={isDark ? '#E2E8F0' : '#344054'}>
+                <View style={[styles.labelRow, { flexDirection: isRTL ? 'row-reverse' : 'row', flexShrink: 0 }]}>
+                  <AppText variant="label" color={isDark ? '#E2E8F0' : '#344054'} style={{ flexShrink: 0 }}>
                     {isRTL ? 'كلمة المرور' : 'Password'}
                   </AppText>
                   <AppText variant="label" color="#D92D20">*</AppText>
@@ -523,10 +523,13 @@ const styles = StyleSheet.create({
   labelRow: {
     alignItems: 'center',
     gap: 4,
+    flexShrink: 0,
   },
   labelRowWithLink: {
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
   },
   input: {
     backgroundColor: '#FFFFFF',

@@ -28,6 +28,7 @@ import { useCreateSummons } from '../../hooks/useSummons';
 import { Student } from '../../types/student';
 import { AppText } from '../../components/common/AppText';
 import { Icon } from '../../components/common/Icon';
+import { SkeletonList, SkeletonBlock } from '../../components/common/Skeleton';
 import { WebDashboardLayout } from '../../components/layout/WebDashboardLayout';
 
 interface ClassGroupItem {
@@ -155,15 +156,15 @@ export default function StudentsScreen() {
   // Default classes list
   const initialClassGroups: ClassGroupItem[] = useMemo(
     () => [
-      { id: 1, name: '1/أ', grade: 'الصف الأول الابتدائي', type: 'طلاب', membersCount: 3 },
-      { id: 2, name: '1/ب', grade: 'الصف الأول الابتدائي', type: 'طلاب', membersCount: 3 },
-      { id: 3, name: '2/أ', grade: 'الصف الثاني الابتدائي', type: 'طلاب', membersCount: 2 },
-      { id: 4, name: '2/ب', grade: 'الصف الثاني الابتدائي', type: 'طلاب', membersCount: 3 },
-      { id: 5, name: '3/أ', grade: 'الصف الثالث الابتدائي', type: 'طلاب', membersCount: 2 },
-      { id: 6, name: '3/ب', grade: 'الصف الثالث الابتدائي', type: 'طلاب', membersCount: 2 },
-      { id: 7, name: '4/أ', grade: 'الصف الرابع الابتدائي', type: 'طلاب', membersCount: 2 },
-      { id: 8, name: '5/أ', grade: 'الصف الخامس الابتدائي', type: 'طلاب', membersCount: 2 },
-      { id: 9, name: '6/أ', grade: 'الصف السادس الابتدائي', type: 'طلاب', membersCount: 2 },
+      { id: 1, name: '1/أ', grade: 'الصف الأول الابتدائي', type: 'طلاب', membersCount: 0 },
+      { id: 2, name: '1/ب', grade: 'الصف الأول الابتدائي', type: 'طلاب', membersCount: 0 },
+      { id: 3, name: '2/أ', grade: 'الصف الثاني الابتدائي', type: 'طلاب', membersCount: 0 },
+      { id: 4, name: '2/ب', grade: 'الصف الثاني الابتدائي', type: 'طلاب', membersCount: 0 },
+      { id: 5, name: '3/أ', grade: 'الصف الثالث الابتدائي', type: 'طلاب', membersCount: 0 },
+      { id: 6, name: '3/ب', grade: 'الصف الثالث الابتدائي', type: 'طلاب', membersCount: 0 },
+      { id: 7, name: '4/أ', grade: 'الصف الرابع الابتدائي', type: 'طلاب', membersCount: 0 },
+      { id: 8, name: '5/أ', grade: 'الصف الخامس الابتدائي', type: 'طلاب', membersCount: 0 },
+      { id: 9, name: '6/أ', grade: 'الصف السادس الابتدائي', type: 'طلاب', membersCount: 0 },
     ],
     []
   );
@@ -190,36 +191,109 @@ export default function StudentsScreen() {
       .trim();
   };
 
-  const isStudentInClass = (st: Student, cls: ClassGroupItem) => {
-    if (!cls || !st) return false;
-    const target = normalizeClass(cls.name); // e.g. "1ا"
-    const targetGrade = normalizeClass(cls.grade); // e.g. "1"
+  const getStudentClassString = (st: any): string => {
+    if (!st) return '';
+    if (typeof st.class_name === 'string' && st.class_name && st.class_name !== '—') return st.class_name;
+    if (typeof st.classroom === 'string') return st.classroom;
+    if (st.classroom && typeof st.classroom === 'object') return st.classroom.name || st.classroom.title || st.classroom.class_name || '';
+    if (typeof st.section === 'string') return st.section;
+    if (st.section && typeof st.section === 'object') return st.section.name || st.section.title || '';
+    if (typeof st.class === 'string') return st.class;
+    if (st.class && typeof st.class === 'object') return st.class.name || st.class.title || '';
+    if (typeof st.section_name === 'string') return st.section_name;
+    if (st.class_number != null) return String(st.class_number);
+    return '';
+  };
 
-    const stClass = normalizeClass(
-      st.class_name ||
-        (st as any).classroom ||
-        (st as any).class ||
-        (st as any).section ||
-        (st as any).section_name ||
-        ''
+  const getStudentGradeString = (st: any): string => {
+    if (!st) return '';
+    if (typeof st.grade_name === 'string' && st.grade_name && st.grade_name !== '—') return st.grade_name;
+    if (typeof st.grade === 'string') return st.grade;
+    if (st.grade && typeof st.grade === 'object') return st.grade.name || st.grade.title || '';
+    if (typeof st.stage_name === 'string') return st.stage_name;
+    if (st.stage && typeof st.stage === 'object') return st.stage.name || st.stage.title || '';
+    return '';
+  };
+
+  const isStudentInClass = (st: Student, clsOrGrade: ClassGroupItem | string) => {
+    if (!clsOrGrade || !st) return false;
+
+    const cls: ClassGroupItem = typeof clsOrGrade === 'string'
+      ? { id: clsOrGrade, name: clsOrGrade, grade: clsOrGrade, type: '', membersCount: 0 }
+      : clsOrGrade;
+
+    // 1. Direct ID matching (sub_group_id, group_id, classroom_id, class_id, section_id, academic_class_id)
+    const stSubGroupId = (st as any).sub_group_id || (st as any).sub_group?.id;
+    const stGroupId = (st as any).group_id || (st as any).group?.id;
+    const stClassroomId = (st as any).classroom_id || (st as any).classroom?.id;
+    const stClassId = (st as any).class_id || (st as any).class?.id;
+    const stSectionId = (st as any).section_id || (st as any).section?.id;
+    const stAcademicClassId = (st as any).academic_class_id;
+
+    const clsSubGroupId = (cls as any).sub_group_id;
+    const clsGroupId = (cls as any).group_id;
+    const clsClassroomId = (cls as any).classroom_id;
+    const clsClassId = (cls as any).class_id;
+
+    if (clsSubGroupId && stSubGroupId && String(stSubGroupId) === String(clsSubGroupId)) return true;
+    if (clsGroupId && stGroupId && String(stGroupId) === String(clsGroupId)) return true;
+    if (clsClassroomId && stClassroomId && String(stClassroomId) === String(clsClassroomId)) return true;
+    if (clsClassId && stClassId && String(stClassId) === String(clsClassId)) return true;
+    if (cls.id && typeof cls.id !== 'string' && (stClassroomId || stClassId || stSectionId || stAcademicClassId)) {
+      if (
+        String(cls.id) === String(stClassroomId) ||
+        String(cls.id) === String(stClassId) ||
+        String(cls.id) === String(stSectionId) ||
+        String(cls.id) === String(stAcademicClassId)
+      ) {
+        return true;
+      }
+    }
+
+    const targetName = normalizeClass(cls.name || '');
+    const targetGrade = normalizeClass(cls.grade || '');
+
+    const stClass = normalizeClass(getStudentClassString(st));
+    const stGrade = normalizeClass(getStudentGradeString(st));
+    const stSection = normalizeClass(
+      typeof (st as any).section === 'string' ? (st as any).section : (st as any).section?.name || (st as any).section_name || ''
     );
-    const stGrade = normalizeClass(st.grade_name || st.grade || (st as any).stage_name || '');
-    const stSection = normalizeClass((st as any).section || (st as any).section_name || '');
 
-    // 1. Direct class name match (e.g., '1/أ' -> '1ا')
-    if (stClass && target && (stClass === target || stClass.includes(target) || target.includes(stClass))) {
+    // 2. Exact match check
+    if (stClass && targetName && stClass === targetName) {
       return true;
     }
 
-    // 2. Grade and section composite match
-    const combined = `${stGrade}${stSection}`;
-    if (combined && target && (combined === target || combined.includes(target))) {
+    // 3. Composite grade + name check (e.g. stClass "1أ", targetGrade "1", targetName "أ" -> "1أ")
+    if (stClass && targetName && targetGrade && stClass === `${targetGrade}${targetName}`) {
       return true;
     }
 
-    // 3. Fallback: match by class index/id if no specific class string
-    if (!stClass && st.id && cls.id) {
-      return (Number(st.id) % 9) + 1 === Number(cls.id);
+    // 4. Substring check: stClass contains targetName (e.g. stClass "فصل 1/ب" contains "1ب")
+    if (stClass && targetName && stClass.includes(targetName)) {
+      if (!targetGrade || !stGrade || stGrade === targetGrade || stGrade.includes(targetGrade) || targetGrade.includes(stGrade)) {
+        return true;
+      }
+    }
+
+    // 5. Reverse substring check ONLY if targetName is a short grade name (e.g. targetName "1" matching stClass "1ب")
+    if (stClass && targetName && targetName.length < stClass.length && targetName.length <= 2 && stClass.includes(targetName)) {
+      if (!targetGrade || !stGrade || stGrade === targetGrade || stGrade.includes(targetGrade) || targetGrade.includes(stGrade)) {
+        return true;
+      }
+    }
+
+    // 6. Composite Grade + Section match (e.g. stGrade "1" + stSection "ب" = "1ب", targetName "1ب")
+    if (stSection && targetName) {
+      const combined = `${stGrade}${stSection}`;
+      if (combined === targetName || combined.includes(targetName)) {
+        return true;
+      }
+    }
+
+    // 7. Grade-only match if student has no specific section/class string and targetName equals stGrade
+    if (!stClass && stGrade && targetName && (stGrade === targetName || targetName === stGrade)) {
+      return true;
     }
 
     return false;
@@ -270,18 +344,7 @@ export default function StudentsScreen() {
         st.id ? `STU-${st.id}` : '—'
       );
 
-      const rawClass =
-        st.class_name ||
-        (typeof st.classroom === 'string' ? st.classroom : st.classroom?.name || st.classroom?.title || st.classroom?.class_name) ||
-        st.classroom_name ||
-        (typeof st.section === 'string' ? st.section : st.section?.name || st.section?.title) ||
-        st.section_name ||
-        (typeof st.class === 'string' ? st.class : st.class?.name || st.class?.title) ||
-        (typeof st.grade === 'string' ? st.grade : st.grade?.name || st.grade?.title) ||
-        st.grade_name ||
-        st.group_name;
-
-      const className = safeStudentField(rawClass, '—');
+      const className = safeStudentField(getStudentClassString(st), '—');
 
       // Synthesize guardian name from student name if missing in API
       let guardianName = safeStudentField(
@@ -385,11 +448,57 @@ export default function StudentsScreen() {
 
   const totalStudentsCount = allStudents.length;
 
-  const [classesList, setClassesList] = useState<ClassGroupItem[]>(initialClassGroups);
+  const [classesList, setClassesList] = useState<ClassGroupItem[]>([]);
 
   const displayClasses = useMemo(() => {
-    const baseList = classesList.length > 0 ? classesList : initialClassGroups;
-    return baseList
+    // 1. Map classes directly from student records in allStudents
+    const classMap = new Map<string, ClassGroupItem>();
+
+    if (Array.isArray(allStudents) && allStudents.length > 0) {
+      allStudents.forEach((st: any) => {
+        const clsName = (
+          st.class_name && st.class_name !== '—'
+            ? st.class_name
+            : (st.grade_name && st.grade_name !== '—' ? st.grade_name : '')
+        ).trim();
+
+        const gradeName = (
+          st.grade_name && st.grade_name !== '—'
+            ? st.grade_name
+            : (isRTL ? 'الصف الدراسي' : 'Grade')
+        ).trim();
+
+        if (clsName) {
+          const key = clsName;
+          if (!classMap.has(key)) {
+            classMap.set(key, {
+              id: (st.sub_group_id || st.group_id || st.classroom_id || st.class_id || key) as any,
+              name: clsName,
+              grade: gradeName,
+              type: st.type || (isRTL ? 'طلاب' : 'Boys'),
+              membersCount: 0,
+              sub_group_id: st.sub_group_id,
+              group_id: st.group_id,
+              classroom_id: st.classroom_id,
+              class_id: st.class_id,
+            } as any);
+          }
+        }
+      });
+    }
+
+    // 2. Use derived classes from allStudents. Fallback to initialClassGroups only if empty.
+    const derivedList = Array.from(classMap.values());
+    const combinedList = derivedList.length > 0 ? [...derivedList] : [...initialClassGroups];
+
+    // Merge any user-added class from local state
+    classesList.forEach((userCls) => {
+      if (!combinedList.some((c) => c.name === userCls.name)) {
+        combinedList.push(userCls);
+      }
+    });
+
+    return combinedList
       .filter((cls) => {
         if (!searchClass.trim()) return true;
         const norm = normalizeClass(searchClass);
@@ -404,14 +513,14 @@ export default function StudentsScreen() {
         const matched = allStudents.filter((st) => isStudentInClass(st, cls));
         return {
           ...cls,
-          membersCount: matched.length > 0 ? matched.length : (cls.membersCount || 0),
+          membersCount: matched.length,
         };
       });
-  }, [classesList, initialClassGroups, allStudents, searchClass]);
+  }, [classesList, initialClassGroups, allStudents, searchClass, isRTL]);
 
   const totalClassMembers = useMemo(
-    () => displayClasses.reduce((acc, curr) => acc + (curr.membersCount || 0), 0),
-    [displayClasses]
+    () => allStudents.length,
+    [allStudents]
   );
   const emptyClassesCount = useMemo(
     () => displayClasses.filter((c) => !c.membersCount || c.membersCount === 0).length,
@@ -455,19 +564,9 @@ export default function StudentsScreen() {
         st.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         st.national_id?.includes(debouncedSearch) ||
         (st as any).student_number?.toLowerCase().includes(debouncedSearch.toLowerCase());
-      const targetGrade = normalizeClass(selectedGrade);
-      const stClass = normalizeClass(
-        st.class_name ||
-          (st as any).classroom ||
-          (st as any).class ||
-          (st as any).section ||
-          (st as any).section_name ||
-          ''
-      );
       const matchGrade =
         selectedGrade === 'all' ||
-        stClass === targetGrade ||
-        (stClass && targetGrade && stClass.includes(targetGrade));
+        isStudentInClass(st, selectedGrade);
       const matchStatus =
         selectedStatus === 'all' ||
         (selectedStatus === 'at_risk' && st.status === 'at_risk') ||
@@ -476,12 +575,39 @@ export default function StudentsScreen() {
     });
   }, [allStudents, debouncedSearch, selectedGrade, selectedStatus]);
 
+  const gradeOptions = useMemo(() => {
+    const set = new Set<string>();
+    allStudents.forEach((st: any) => {
+      const clsName = (
+        st.class_name ||
+        (typeof st.classroom === 'string' ? st.classroom : st.classroom?.name) ||
+        (typeof st.section === 'string' ? st.section : st.section?.name) ||
+        st.section_name ||
+        st.class_number ||
+        ''
+      ).trim();
+      const gradeName = (
+        st.grade_name ||
+        (typeof st.grade === 'string' ? st.grade : st.grade?.name) ||
+        st.stage_name ||
+        ''
+      ).trim();
+
+      if (clsName && clsName !== '—') set.add(clsName);
+      if (gradeName && gradeName !== '—') set.add(gradeName);
+    });
+
+    const dynamicGrades = Array.from(set);
+    if (dynamicGrades.length === 0) {
+      return ['all', '1/أ', '1/ب', '2/أ', '2/ب', '3/أ', '3/ب', '4/أ', '5/أ', '6/أ'];
+    }
+    return ['all', ...dynamicGrades];
+  }, [allStudents]);
+
   const classStudentsList = useMemo(() => {
     if (!selectedClassForDrawer) return [];
     return allStudents.filter((st) => isStudentInClass(st, selectedClassForDrawer));
   }, [selectedClassForDrawer, allStudents]);
-
-  const gradeOptions = ['all', '1/أ', '1/ب', '2/أ', '2/ب', '3/أ', '3/ب', '4/أ', '5/أ', '6/أ'];
 
   // Open Add Student Modal
   const handleOpenAddStudent = () => {
@@ -623,6 +749,8 @@ export default function StudentsScreen() {
       subtitle={
         isGroupsMode
           ? (isRTL ? 'إنشاء وتعديل الفصول داخل المجموعات' : 'Manage class groups')
+          : isLoading
+          ? (isRTL ? 'جارٍ تحميل البيانات…' : 'Loading data…')
           : `${totalStudentsCount} ${isRTL ? 'طالب مسجل' : 'registered students'}`
       }
     >
@@ -882,7 +1010,16 @@ export default function StudentsScreen() {
             {/* Mobile Touch-Friendly Student Cards View */}
             {viewMode === 'cards' && (
               <View style={styles.cardsList}>
-                {displayStudents.map((st, idx) => {
+                {isLoading ? (
+                  <SkeletonList count={5} />
+                ) : displayStudents.length === 0 ? (
+                  <View style={styles.emptyContainer}>
+                    <AppText variant="h3" color="#64748B" align="center">
+                      {isRTL ? 'لا يوجد طلاب مطبقين لهذا التصفية (0 طالب)' : 'No students found matching filter (0 students)'}
+                    </AppText>
+                  </View>
+                ) : (
+                  displayStudents.map((st, idx) => {
                   const isAtRisk = st.status === 'at_risk';
                   const avatarBg = getAvatarBg(st.name);
 
@@ -990,7 +1127,7 @@ export default function StudentsScreen() {
                       </View>
                     </View>
                   );
-                })}
+                }))}
               </View>
             )}
 
@@ -1042,7 +1179,16 @@ export default function StudentsScreen() {
                       </View>
                     </View>
 
-                    {displayStudents.map((st, idx) => {
+                    {isLoading ? (
+                      <SkeletonList count={5} style={{ padding: 16 }} />
+                    ) : displayStudents.length === 0 ? (
+                      <View style={[styles.tableRow, { paddingVertical: 20, justifyContent: 'center' }]}>
+                        <AppText variant="bodyBold" color="#64748B">
+                          {isRTL ? 'لا يوجد طلاب مسجلون (0 طالب)' : 'No students found (0 students)'}
+                        </AppText>
+                      </View>
+                    ) : (
+                      displayStudents.map((st, idx) => {
                       const isAtRisk = st.status === 'at_risk';
                       const avatarBg = getAvatarBg(st.name);
 
@@ -1161,7 +1307,7 @@ export default function StudentsScreen() {
                           </View>
                         </View>
                       );
-                    })}
+                    }))}
                   </View>
                 </ScrollView>
               </View>
@@ -2393,89 +2539,91 @@ export default function StudentsScreen() {
                   contentContainerStyle={styles.classDrawerScrollContent}
                   showsVerticalScrollIndicator={false}
                 >
-                  {classStudentsList.map((st, idx) => {
-                    const initialLetter = (st.name || 'ط').trim().charAt(0);
-
-                    return (
-                      <View
-                        key={st.id || idx}
-                        style={[
-                          styles.classMemberCard,
-                          isDark && styles.darkCard,
-                          { flexDirection: isRTL ? 'row-reverse' : 'row' },
-                        ]}
-                      >
-                        {/* Student Avatar + Details */}
-                        <View style={[styles.classMemberLeading, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                          <View style={styles.classMemberAvatar}>
-                            <AppText variant="bodyBold" color="#2563EB">
-                              {initialLetter}
-                            </AppText>
-                          </View>
-
-                          <View style={[styles.classMemberInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                            <AppText
-                              variant="bodyBold"
-                              color={isDark ? '#F8FAFC' : '#0F172A'}
-                              numberOfLines={1}
-                              style={{ textAlign: isRTL ? 'right' : 'left' }}
-                            >
-                              {st.name}
-                            </AppText>
-                            <AppText
-                              variant="caption"
-                              color="#94A3B8"
-                              numberOfLines={1}
-                              style={{ textAlign: isRTL ? 'right' : 'left', marginTop: 2 }}
-                            >
-                              {st.national_id && st.national_id !== '—' ? `الهوية: ${st.national_id}` : (st.student_number || '—')}{st.guardian_phone && st.guardian_phone !== '—' ? `  ·  ${st.guardian_phone}` : ''}
-                            </AppText>
-                          </View>
-                        </View>
-
-                        {/* Trash / Delete Action */}
-                        <TouchableOpacity
-                          style={styles.classMemberTrashBtn}
-                          accessibilityRole="button"
-                          accessibilityLabel="إزالة الطالب"
-                          onPress={() => {
-                            Alert.alert(
-                              isRTL ? 'إزالة من الفصل' : 'Remove from Class',
-                              isRTL
-                                ? `هل أنت متأكد من إزالة الطالب "${st.name}" من فصل ${selectedClassForDrawer.name}؟`
-                                : `Remove "${st.name}" from class ${selectedClassForDrawer.name}?`,
-                              [
-                                { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-                                {
-                                  text: isRTL ? 'إزالة' : 'Remove',
-                                  style: 'destructive',
-                                  onPress: () => {
-                                    setClassesList((prev) =>
-                                      prev.map((c) =>
-                                        c.id === selectedClassForDrawer.id
-                                          ? { ...c, membersCount: Math.max(0, (c.membersCount || 1) - 1) }
-                                          : c
-                                      )
-                                    );
-                                  },
-                                },
-                              ]
-                            );
-                          }}
-                        >
-                          <Icon name="trash" size={15} color="#E11D48" />
-                        </TouchableOpacity>
-                      </View>
-                    );
-                  })}
-
-                  {classStudentsList.length === 0 && (
+                  {isLoading ? (
+                    <SkeletonList count={3} />
+                  ) : classStudentsList.length === 0 ? (
                     <View style={styles.classDrawerEmptyBox}>
                       <Icon name="users" size={36} color="#94A3B8" />
                       <AppText variant="body" color="#64748B" style={{ marginTop: 8, textAlign: 'center' }}>
-                        {isRTL ? 'لا يوجد طلاب مسجلين في هذا الفصل' : 'No students in this class'}
+                        {isRTL ? 'لا يوجد طلاب مسجلون في هذا الفصل' : 'No students registered in this class'}
                       </AppText>
                     </View>
+                  ) : (
+                    classStudentsList.map((st, idx) => {
+                      const initialLetter = (st.name || 'ط').trim().charAt(0);
+
+                      return (
+                        <View
+                          key={st.id || idx}
+                          style={[
+                            styles.classMemberCard,
+                            isDark && styles.darkCard,
+                            { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                          ]}
+                        >
+                          {/* Student Avatar + Details */}
+                          <View style={[styles.classMemberLeading, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                            <View style={styles.classMemberAvatar}>
+                              <AppText variant="bodyBold" color="#2563EB">
+                                {initialLetter}
+                              </AppText>
+                            </View>
+
+                            <View style={[styles.classMemberInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                              <AppText
+                                variant="bodyBold"
+                                color={isDark ? '#F8FAFC' : '#0F172A'}
+                                numberOfLines={1}
+                                style={{ textAlign: isRTL ? 'right' : 'left' }}
+                              >
+                                {st.name}
+                              </AppText>
+                              <AppText
+                                variant="caption"
+                                color="#94A3B8"
+                                numberOfLines={1}
+                                style={{ textAlign: isRTL ? 'right' : 'left', marginTop: 2 }}
+                              >
+                                {st.national_id && st.national_id !== '—' ? `الهوية: ${st.national_id}` : (st.student_number || '—')}{st.guardian_phone && st.guardian_phone !== '—' ? `  ·  ${st.guardian_phone}` : ''}
+                              </AppText>
+                            </View>
+                          </View>
+
+                          {/* Trash / Delete Action */}
+                          <TouchableOpacity
+                            style={styles.classMemberTrashBtn}
+                            accessibilityRole="button"
+                            accessibilityLabel="إزالة الطالب"
+                            onPress={() => {
+                              Alert.alert(
+                                isRTL ? 'إزالة من الفصل' : 'Remove from Class',
+                                isRTL
+                                  ? `هل أنت متأكد من إزالة الطالب "${st.name}" من فصل ${selectedClassForDrawer.name}؟`
+                                  : `Remove "${st.name}" from class ${selectedClassForDrawer.name}?`,
+                                [
+                                  { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
+                                  {
+                                    text: isRTL ? 'إزالة' : 'Remove',
+                                    style: 'destructive',
+                                    onPress: () => {
+                                      setClassesList((prev) =>
+                                        prev.map((c) =>
+                                          c.id === selectedClassForDrawer.id
+                                            ? { ...c, membersCount: Math.max(0, (c.membersCount || 1) - 1) }
+                                            : c
+                                        )
+                                      );
+                                    },
+                                  },
+                                ]
+                              );
+                            }}
+                          >
+                            <Icon name="trash" size={15} color="#E11D48" />
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })
                   )}
                 </ScrollView>
               </>

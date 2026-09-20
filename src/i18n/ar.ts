@@ -238,7 +238,7 @@ export default {
     schoolOverview: 'نظرة عامة على أداء المدرسة اليوم',
     defaultSchoolName: 'مدارس رواد المستقبل الأهلية',
     defaultUserName: 'عبدالله المحمدي',
-    rolePrincipal: 'قائد المدرسة',
+    rolePrincipal: 'مدير المدرسة',
     roleVice: 'وكيل المدرسة',
     roleTeacher: 'معلم',
     roleCounselor: 'موجه طلابي',

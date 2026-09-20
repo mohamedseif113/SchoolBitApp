@@ -42,7 +42,7 @@ export const USER_ROLES: Record<UserRole, RoleInfo> = {
   },
   principal: {
     key: 'principal',
-    nameAr: 'قائد المدرسة',
+    nameAr: 'مدير المدرسة',
     nameEn: 'School Principal',
     descriptionAr: 'القيادة التربوية والتعليمية للمدرسة',
     descriptionEn: 'Educational and pedagogical leadership',
@@ -142,7 +142,7 @@ export const REPRESENTATIVE_TITLES: RepresentativeTitle[] = [
   },
   {
     id: 'school_principal',
-    titleAr: 'قائد المدرسة / مدير المدرسة',
+    titleAr: 'مدير المدرسة',
     titleEn: 'School Principal',
     category: 'leadership',
   },
@@ -273,7 +273,7 @@ export function getRoleDisplayName(role: any, lang: 'ar' | 'en' = 'ar'): string 
     return lang === 'ar' ? info.nameAr : info.nameEn;
   }
   if (normalizedKey.includes('principal') || normalizedKey.includes('manager') || normalizedKey.includes('director')) {
-    return lang === 'ar' ? 'قائد المدرسة' : 'School Principal';
+    return lang === 'ar' ? 'مدير المدرسة' : 'School Principal';
   }
   if (normalizedKey.includes('admin')) {
     return lang === 'ar' ? 'مدير المدرسة' : 'School Administrator';

@@ -31,6 +31,7 @@ import { useStudents } from '../../hooks/useStudents';
 import { Summons, SummonsStatus } from '../../types/summons';
 import { AppText } from '../../components/common/AppText';
 import { Icon } from '../../components/common/Icon';
+import { SkeletonList } from '../../components/common/Skeleton';
 
 export default function SummonsScreen() {
   const { t, i18n } = useTranslation();
@@ -172,7 +173,9 @@ export default function SummonsScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1246B7']} />}
       >
-        {filteredSummons.length > 0 ? (
+        {summonsQuery.isLoading ? (
+          <SkeletonList count={4} />
+        ) : filteredSummons.length > 0 ? (
           filteredSummons.map((sum: Summons, idx: number) => {
             const badge = getStatusBadge(sum.status);
             let sName =

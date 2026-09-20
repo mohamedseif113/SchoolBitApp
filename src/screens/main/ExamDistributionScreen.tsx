@@ -158,8 +158,8 @@ export default function ExamDistributionScreen() {
                 }
 
                 const sortedSeats = [...rawSeats].sort((a: any, b: any) => {
-                  const numA = Number(a.seat_number ?? a.number ?? a.seatNo ?? 0);
-                  const numB = Number(b.seat_number ?? b.number ?? b.seatNo ?? 0);
+                  const numA = Number(a.seat_number ?? a.seat_no ?? a.number ?? a.seatNo ?? 0);
+                  const numB = Number(b.seat_number ?? b.seat_no ?? b.number ?? b.seatNo ?? 0);
                   return numA - numB;
                 });
 
@@ -189,7 +189,7 @@ export default function ExamDistributionScreen() {
 
                   const matchedStudent = Array.isArray(studentsList) && studentsList[idx];
                   const cName = seat.class_name || seat.classroom || seat.grade || (matchedStudent?.class_name ? matchedStudent.class_name : '');
-                  const sNum = seat.seat_number ?? seat.number ?? seat.seatNo ?? (idx + 1);
+                  const sNum = seat.seat_number ?? seat.seat_no ?? seat.number ?? seat.seatNo ?? (idx + 1);
 
                   return (
                     <View key={String(seat.id || idx)} style={styles.seatRow}>

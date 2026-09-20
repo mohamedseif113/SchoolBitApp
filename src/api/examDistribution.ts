@@ -37,10 +37,26 @@ export async function getExamRooms(params: Record<string, any> = {}): Promise<Ex
   return Array.isArray(data) ? data : [];
 }
 
+function extractArrayData<T>(raw: any): T[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw.data)) return raw.data;
+  if (raw.data && Array.isArray(raw.data.data)) return raw.data.data;
+  if (raw.data && Array.isArray(raw.data.seats)) return raw.data.seats;
+  if (Array.isArray(raw.seats)) return raw.seats;
+  if (Array.isArray(raw.items)) return raw.items;
+  return [];
+}
+
 export async function getExamSeats(sessionId: string | number): Promise<ExamSeat[]> {
-  const response = await apiClient.get(`/exam-dist/sessions/${sessionId}/seats`);
-  const data = response.data?.data || response.data;
-  return Array.isArray(data) ? data : [];
+  try {
+    const response = await apiClient.get(`/exam-dist/sessions/${sessionId}/seats`, {
+      params: { per_page: 100 },
+    });
+    return extractArrayData<ExamSeat>(response.data);
+  } catch {
+    return [];
+  }
 }
 
 // Official API: distribution is triggered via /exam-dist/sessions/{sessionId}/distribute

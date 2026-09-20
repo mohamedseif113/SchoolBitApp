@@ -86,10 +86,47 @@ export const SkeletonText: React.FC<{
   );
 };
 
+export const SkeletonCard: React.FC<{ style?: ViewStyle }> = ({ style }) => {
+  const { isRTL } = useAppDirection();
+  return (
+    <View style={[styles.cardSkeleton, style]}>
+      <View style={[styles.cardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <SkeletonCircle size={40} />
+        <View style={{ flex: 1, gap: 6, marginHorizontal: 10 }}>
+          <SkeletonBlock width="70%" height={16} borderRadius={4} />
+          <SkeletonBlock width="40%" height={12} borderRadius={4} />
+        </View>
+      </View>
+      <SkeletonBlock width="100%" height={12} borderRadius={4} style={{ marginTop: 10 }} />
+    </View>
+  );
+};
+
+export const SkeletonList: React.FC<{ count?: number; style?: ViewStyle }> = ({ count = 5, style }) => {
+  return (
+    <View style={[{ gap: 12 }, style]}>
+      {Array.from({ length: count }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   skeletonBase: {
     overflow: 'hidden',
   },
+  cardSkeleton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  cardHeader: {
+    alignItems: 'center',
+  },
 });
 
 export default SkeletonBlock;
+

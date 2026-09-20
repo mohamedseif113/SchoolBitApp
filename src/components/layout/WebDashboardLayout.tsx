@@ -195,7 +195,7 @@ export const WebDashboardLayout: React.FC<WebDashboardLayoutProps> = ({
     if (isVicePrincipal) return isRTL ? 'وكيل المدرسة' : 'Vice Principal';
     if (isCounselor) return isRTL ? 'المرشد الطلابي' : 'Student Counselor';
     if (isTeacher) return isRTL ? 'معلم' : 'Teacher';
-    return isRTL ? 'قائد المدرسة' : 'School Principal';
+    return isRTL ? 'مدير المدرسة' : 'School Principal';
   }, [user, role, isVicePrincipal, isCounselor, isTeacher, isRTL]);
 
   const userNameDisplay = useMemo(() => {
