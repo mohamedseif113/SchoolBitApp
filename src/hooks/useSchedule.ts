@@ -4,6 +4,7 @@ import {
   getWeeklySchedule,
   getScheduleGrid,
   getMySchedule,
+  getTeacherSchedule,
   createSchedule,
   updateSchedule,
   deleteSchedule,
@@ -47,6 +48,16 @@ export function useMySchedule(params: ScheduleFilterParams = {}) {
   return useQuery({
     queryKey: ['schedule', 'mine', params],
     queryFn: () => getMySchedule(params),
+    staleTime: 1000 * 60 * 3,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useTeacherSchedule(teacherId: string | number, params: ScheduleFilterParams = {}) {
+  return useQuery({
+    queryKey: ['schedule', 'teacher', teacherId, params],
+    queryFn: () => getTeacherSchedule(teacherId),
+    enabled: !!teacherId && teacherId !== 'all',
     staleTime: 1000 * 60 * 3,
     refetchOnWindowFocus: false,
   });

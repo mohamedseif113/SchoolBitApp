@@ -327,12 +327,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 const subjectLabel = cls.subject || cls.title || '—';
 
                 return (
-                  <View
+                  <TouchableOpacity
                     key={String(cls.id || index)}
                     style={[
                       styles.classItemRow,
                       { flexDirection: isRTL ? 'row-reverse' : 'row' },
                     ]}
+                    onPress={() => navigation.navigate('Attendance', { class_name: classLabel, period: cls.period })}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${subjectLabel} - ${classLabel}`}
                   >
                     <Text style={styles.classTimeText}>{timeText}</Text>
                     <View style={styles.classPillSmall}>
@@ -377,7 +380,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           : t('dashboard.timetable.statusUpcoming', 'قادمة')}
                       </Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 );
               })
             ) : (

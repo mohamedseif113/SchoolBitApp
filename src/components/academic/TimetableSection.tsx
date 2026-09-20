@@ -195,29 +195,29 @@ export const TimetableSection: React.FC<Props> = ({ isDark = false }) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={[styles.kpiRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
       >
-        <View style={styles.kpiCard}>
-          <Text style={[styles.kpiNumber, { color: '#2563EB' }]}>{kpis.totalSessions}</Text>
-          <Text style={styles.kpiLabel}>{isRTL ? 'حصص موزعة' : 'Total Sessions'}</Text>
+        <View style={[styles.kpiCard, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <Text style={[styles.kpiNumber, { color: '#2563EB', textAlign: isRTL ? 'right' : 'left' }]}>{kpis.totalSessions}</Text>
+          <Text style={[styles.kpiLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'حصص موزعة' : 'Total Sessions'}</Text>
         </View>
 
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiNumber}>{kpis.uniqueTeachers}</Text>
-          <Text style={styles.kpiLabel}>{isRTL ? 'معلمون نشطون' : 'Active Teachers'}</Text>
+        <View style={[styles.kpiCard, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <Text style={[styles.kpiNumber, { textAlign: isRTL ? 'right' : 'left' }]}>{kpis.uniqueTeachers}</Text>
+          <Text style={[styles.kpiLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'معلمون نشطون' : 'Active Teachers'}</Text>
         </View>
 
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiNumber}>{kpis.uniqueClasses}</Text>
-          <Text style={styles.kpiLabel}>{isRTL ? 'فصول' : 'Classes'}</Text>
+        <View style={[styles.kpiCard, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <Text style={[styles.kpiNumber, { textAlign: isRTL ? 'right' : 'left' }]}>{kpis.uniqueClasses}</Text>
+          <Text style={[styles.kpiLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'فصول' : 'Classes'}</Text>
         </View>
 
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiNumber}>{kpis.gaps}</Text>
-          <Text style={styles.kpiLabel}>{isRTL ? 'فراغات' : 'Gaps'}</Text>
+        <View style={[styles.kpiCard, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <Text style={[styles.kpiNumber, { textAlign: isRTL ? 'right' : 'left' }]}>{kpis.gaps}</Text>
+          <Text style={[styles.kpiLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'فراغات' : 'Gaps'}</Text>
         </View>
 
-        <View style={styles.kpiCard}>
-          <Text style={[styles.kpiNumber, { color: '#10B981' }]}>{kpis.conflicts}</Text>
-          <Text style={styles.kpiLabel}>{isRTL ? 'تعارضات' : 'Conflicts'}</Text>
+        <View style={[styles.kpiCard, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <Text style={[styles.kpiNumber, { color: '#10B981', textAlign: isRTL ? 'right' : 'left' }]}>{kpis.conflicts}</Text>
+          <Text style={[styles.kpiLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'تعارضات' : 'Conflicts'}</Text>
         </View>
       </ScrollView>
 
@@ -499,8 +499,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    alignItems: 'center',
-    minWidth: 90,
+    minWidth: 95,
     ...shadows.card,
   },
   kpiNumber: {

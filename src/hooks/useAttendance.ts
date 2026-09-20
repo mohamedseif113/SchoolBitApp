@@ -2,19 +2,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAttendanceSummary, getDailyAttendance, saveAttendance as saveAttendanceApi } from '../api/attendance';
 import { SaveAttendancePayload, AttendanceSummaryData, ClassAttendanceItem } from '../types/attendance';
 
-export function useAttendance(date?: string) {
+export function useAttendance(date?: string, classId?: string | number) {
   const queryClient = useQueryClient();
 
   const summaryQuery = useQuery<AttendanceSummaryData>({
-    queryKey: ['attendance', 'summary', date],
+    queryKey: ['attendance', 'summary', date, classId],
     queryFn: () => getAttendanceSummary(date),
     staleTime: 1000 * 60 * 3,
     refetchOnWindowFocus: false,
   });
 
   const dailyQuery = useQuery<ClassAttendanceItem[]>({
-    queryKey: ['attendance', 'daily', date],
-    queryFn: () => getDailyAttendance(date),
+    queryKey: ['attendance', 'daily', date, classId],
+    queryFn: () => getDailyAttendance(date, classId),
     staleTime: 1000 * 60 * 3,
     refetchOnWindowFocus: false,
   });
