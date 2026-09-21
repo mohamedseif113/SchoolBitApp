@@ -351,16 +351,11 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 </View>
               ))
             ) : (
-              <View style={[styles.scheduleCard, isDark && styles.darkSubCard]}>
-                <View style={[styles.scheduleCardHeader]}>
-                  <Text style={[styles.scheduleDayTitle, isDark && styles.darkText]}>{isRTL ? 'الأحد' : 'Sunday'}</Text>
-                </View>
-                <View style={[styles.scheduleItemRow]}>
-                  <Text style={styles.periodTag}>{isRTL ? 'الحصة الأولى' : 'Period 1'}</Text>
-                  <Text style={[styles.subjectNameText, isDark && styles.darkText]}>{isRTL ? 'رياضيات' : 'Math'}</Text>
-                  <Text style={styles.teacherNameText}>{isRTL ? 'معلم الاختبار' : 'Teacher'}</Text>
-                  <Text style={styles.timeRangeText}>07:30:00 — 08:15:00</Text>
-                </View>
+              <View style={styles.emptyBoxLarge}>
+                <Icon name="calendar" size={32} color={isDark ? '#64748B' : '#94A3B8'} />
+                <Text style={[styles.emptyTextLarge, isDark && styles.darkSubtext]}>
+                  {isRTL ? 'لا توجد حصص مجدولة.' : 'No scheduled periods.'}
+                </Text>
               </View>
             )}
           </View>

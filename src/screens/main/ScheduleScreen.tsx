@@ -237,24 +237,7 @@ export default function ScheduleScreen() {
 
     if (items.length > 0) return items;
 
-    // Structured fallback items for logged in teacher when API database has no custom schedule seeded
-    const teacherName = selectedTeacher !== 'all' ? selectedTeacher : (user?.name || 'تجربة المعلم خلود');
-    return [
-      { id: '1', day: 1, period: 1, subject_name: 'الرياضيات', class_name: '1/أ', teacher_name: teacherName, room_name: '101' },
-      { id: '2', day: 1, period: 2, subject_name: 'لغتي', class_name: '1/أ', teacher_name: teacherName, room_name: '101' },
-      { id: '3', day: 1, period: 4, subject_name: 'العلوم', class_name: '1/ب', teacher_name: teacherName, room_name: '102' },
-      { id: '4', day: 2, period: 1, subject_name: 'التربية الإسلامية', class_name: '2/أ', teacher_name: teacherName, room_name: '103' },
-      { id: '5', day: 2, period: 3, subject_name: 'الرياضيات', class_name: '1/أ', teacher_name: teacherName, room_name: '101' },
-      { id: '6', day: 2, period: 5, subject_name: 'اللغة الإنجليزية', class_name: '2/ب', teacher_name: teacherName, room_name: '104' },
-      { id: '7', day: 3, period: 2, subject_name: 'لغتي', class_name: '1/أ', teacher_name: teacherName, room_name: '101' },
-      { id: '8', day: 3, period: 4, subject_name: 'العلوم', class_name: '1/ب', teacher_name: teacherName, room_name: '102' },
-      { id: '9', day: 3, period: 6, subject_name: 'التربية الفنية', class_name: '3/أ', teacher_name: teacherName, room_name: '105' },
-      { id: '10', day: 4, period: 1, subject_name: 'الرياضيات', class_name: '1/أ', teacher_name: teacherName, room_name: '101' },
-      { id: '11', day: 4, period: 3, subject_name: 'التربية الإسلامية', class_name: '2/أ', teacher_name: teacherName, room_name: '103' },
-      { id: '12', day: 4, period: 5, subject_name: 'العلوم', class_name: '1/ب', teacher_name: teacherName, room_name: '102' },
-      { id: '13', day: 5, period: 2, subject_name: 'لغتي', class_name: '1/أ', teacher_name: teacherName, room_name: '101' },
-      { id: '14', day: 5, period: 4, subject_name: 'الرياضيات', class_name: '2/أ', teacher_name: teacherName, room_name: '103' },
-    ];
+    return [];
   }, [viewMode, selectedTeacher, dailyQuery.data, mineQuery.data, weeklyQuery.data, gridQuery.data, teacherQuery.data, user?.name, extractItemsFromApiResponse]);
 
   // Dynamic Options derived from API data
@@ -265,7 +248,6 @@ export default function ScheduleScreen() {
       if (item.stage) set.add(item.stage);
     });
     const list = Array.from(set).filter(Boolean);
-    if (list.length === 0) return ['all', 'الابتدائية', 'المتوسطة', 'الثانوية'];
     return ['all', ...list];
   }, [rawActiveItems]);
 
@@ -276,7 +258,6 @@ export default function ScheduleScreen() {
       if (item.grade) set.add(item.grade);
     });
     const list = Array.from(set).filter(Boolean);
-    if (list.length === 0) return ['all', 'الصف الأول', 'الصف الثاني', 'الصف الثالث', 'الصف الرابع', 'الصف الخامس', 'الصف السادس'];
     return ['all', ...list];
   }, [rawActiveItems]);
 
@@ -286,7 +267,6 @@ export default function ScheduleScreen() {
       if (item.class_name) set.add(item.class_name);
     });
     const list = Array.from(set).filter(Boolean);
-    if (list.length === 0) return ['all', '1/أ', '1/ب', '2/أ', '2/ب', '3/أ', '3/ب', '4/أ'];
     return ['all', ...list];
   }, [rawActiveItems]);
 
@@ -296,9 +276,8 @@ export default function ScheduleScreen() {
       if (item.teacher_name) set.add(item.teacher_name);
     });
     const list = Array.from(set).filter(Boolean);
-    if (list.length === 0) return ['all', user?.name || 'تجربة المعلم خلود', 'فهد عبدالعزيز', 'سعد الناصر'];
     return ['all', ...list];
-  }, [rawActiveItems, user?.name]);
+  }, [rawActiveItems]);
 
   // Apply Filter selections to items
   const activeItems = useMemo(() => {
@@ -358,12 +337,12 @@ export default function ScheduleScreen() {
   };
 
   const assignedClassesCount = useMemo(() => {
-    return activeItems.length > 0 ? activeItems.length : 14;
+    return activeItems.length;
   }, [activeItems]);
 
   const uniqueClassesCount = useMemo(() => {
     const set = new Set(activeItems.map((i: any) => i.class_name).filter(Boolean));
-    return set.size > 0 ? set.size : 2;
+    return set.size;
   }, [activeItems]);
 
   const onRefresh = useCallback(async () => {

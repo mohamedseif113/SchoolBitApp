@@ -79,36 +79,8 @@ export default function TasksScreen() {
     else if (rawApiData && Array.isArray(rawApiData.items)) list = rawApiData.items;
     else if (rawApiData && Array.isArray(rawApiData.data)) list = rawApiData.data;
 
-    if (list.length > 0) return list;
-
-    const teacherName = user?.name || 'تجربة المعلم خلود';
-    return [
-      {
-        id: '1',
-        title: 'تجربة المهام',
-        description: 'مراجعة وتقويم الخطة الدراسية وتجهيز كشوف الفصل 1/أ - حساب المعلم',
-        status: 'pending',
-        priority: 'medium',
-        due_date: '2026-08-14',
-        category: 'تقويم',
-        account: 'مدرسة 1/أ - حساب المعلم',
-        assigned_to: teacherName,
-        created_at: '2026-08-10',
-      } as any,
-      {
-        id: '2',
-        title: 'إعداد اختبار الفترة الأولى',
-        description: 'تجهيز أسئلة تقويم مقرر لغتي والرياضيات',
-        status: 'completed',
-        priority: 'high',
-        due_date: '2026-09-01',
-        category: 'أكاديمي',
-        account: 'مدرسة 1/أ',
-        assigned_to: teacherName,
-        created_at: '2026-08-20',
-      } as any,
-    ];
-  }, [rawApiData, user?.name]);
+    return list;
+  }, [rawApiData]);
 
   const isLoading = tasksQuery?.isLoading;
 
@@ -450,12 +422,28 @@ export default function TasksScreen() {
                             <Text style={styles.tagPillText}>🏷️ {task.category}</Text>
                           </View>
                         )}
-                        <View style={styles.tagPill}>
-                          <Text style={styles.tagPillText}>📅 {task?.due_date || '2026-08-14'}</Text>
-                        </View>
-                        <View style={styles.tagPillWarning}>
-                          <Text style={styles.tagPillWarningText}>⚠️ متأخر 37 يوم</Text>
-                        </View>
+                        {task?.due_date && (
+                          <View style={styles.tagPill}>
+                            <Text style={styles.tagPillText}>📅 {task.due_date}</Text>
+                          </View>
+                        )}
+                        {(() => {
+                          if (!task?.due_date) return null;
+                          const dueDate = new Date(task.due_date);
+                          const now = new Date();
+                          const diffMs = now.getTime() - dueDate.getTime();
+                          const diffDays = Math.floor(diffMs / (1000 * 3600 * 24));
+                          if (diffDays > 0 && task.status !== 'completed') {
+                            return (
+                              <View style={styles.tagPillWarning}>
+                                <Text style={styles.tagPillWarningText}>
+                                  {isRTL ? `⚠️ متأخر ${diffDays} يوم` : `⚠️ Overdue ${diffDays}d`}
+                                </Text>
+                              </View>
+                            );
+                          }
+                          return null;
+                        })()}
                       </View>
 
                       {/* Footer Actions Row */}

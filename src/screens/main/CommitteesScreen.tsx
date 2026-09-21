@@ -70,38 +70,8 @@ export default function CommitteesScreen() {
     else if (rawApiCommittees && Array.isArray(rawApiCommittees.items)) list = rawApiCommittees.items;
     else if (rawApiCommittees && Array.isArray(rawApiCommittees.data)) list = rawApiCommittees.data;
 
-    if (list.length > 0) return list;
-
-    const teacherName = user?.name || 'تجربة المعلم خلود';
-    return [
-      {
-        id: '1',
-        name: 'لجنة المقصف والتغذية المدرسية',
-        description: 'الإشراف على المقصف ومتابعة سلامة الغذاء والتوعية الصحية',
-        status: 'جديدة',
-        role: 'دورية: رئيس',
-        head_name: teacherName,
-        end_date: '2027-04-30',
-        progress: 0,
-        members_count: 3,
-        tasks_count: 0,
-        completed_tasks_count: 0,
-      } as any,
-      {
-        id: '2',
-        name: 'txt - test',
-        description: 'متابعة الأنشطة المدرسية الكشفية والأنشطة الإثرائية للطلاب',
-        status: 'نشطة',
-        role: 'عضو',
-        head_name: teacherName,
-        end_date: '2026-12-31',
-        progress: 0,
-        members_count: 2,
-        tasks_count: 0,
-        completed_tasks_count: 0,
-      } as any,
-    ];
-  }, [rawApiCommittees, user?.name]);
+    return list;
+  }, [rawApiCommittees]);
 
   const activeCommittee = committeesList[selectedCommitteeIndex] || committeesList[0];
 
@@ -163,7 +133,7 @@ export default function CommitteesScreen() {
         <View style={[styles.headerTopRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={[styles.titleGroup, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
             <AppText variant="h1" weight="bold" color={isDark ? '#F8FAFC' : '#0F172A'} style={[styles.screenTitle, isRTL ? styles.rtlText : styles.ltrText]}>
-              {isRTL ? 'لجاني وكشوفني' : 'My Committees & Rosters'}
+              {isRTL ? 'لجاني وكشوفي' : 'My Committees & Rosters'}
             </AppText>
             <AppText variant="caption" color={isDark ? '#94A3B8' : '#64748B'} style={[styles.screenSubtitle, isRTL ? styles.rtlText : styles.ltrText]}>
               {`${committeesList.length} ${isRTL ? 'لجان ممتدة' : 'Active Committees'}`}
@@ -246,6 +216,16 @@ export default function CommitteesScreen() {
       >
         {committeesQuery.isLoading && !refreshing ? (
           <ActivityIndicator size="large" color="#1246B7" style={{ marginVertical: 30 }} />
+        ) : committeesList.length === 0 ? (
+          <View style={{ padding: 40, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 40, marginBottom: 12 }}>🏛️</Text>
+            <AppText variant="h3" weight="bold" color={isDark ? '#FFFFFF' : '#0F172A'}>
+              {isRTL ? 'لا توجد لجان مسجلة' : 'No Committees Found'}
+            </AppText>
+            <AppText variant="caption" color="#94A3B8" style={{ marginTop: 6, textAlign: 'center' }}>
+              {isRTL ? 'لم يتم إسناد أي لجان لك حالياً' : 'No committees have been assigned to you currently'}
+            </AppText>
+          </View>
         ) : activeCommittee ? (
           <View style={[styles.activeCommitteeCard, isDark && styles.darkCard]}>
             {/* Header Box of Selected Committee */}

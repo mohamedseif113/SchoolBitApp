@@ -289,7 +289,7 @@ export default function AtRiskScreen() {
                   (typeof st.classroom === 'string' ? st.classroom : st.classroom?.name) ||
                   (typeof st.grade === 'string' ? st.grade : st.grade?.name) ||
                   (typeof st.class === 'string' ? st.class : st.class?.name) ||
-                  (isRTL ? 'الصف الأول الابتدائي · 1/أ' : 'Grade 1 · Class 1/A');
+                  '—';
 
                 return (
                   <View key={st.id} style={[styles.studentAtRiskCard, isDark && styles.darkCard]}>
@@ -324,10 +324,10 @@ export default function AtRiskScreen() {
                         {isRTL ? 'مستوى الخطر' : 'Risk Level'}
                       </AppText>
                       <AppText variant="captionBold" color="#D97706">
-                        {st.risk_score || 33}%
+                        {st.risk_score || 0}%
                       </AppText>
                       <View style={styles.progressBarTrack}>
-                        <View style={[styles.progressBarFill, { width: `${st.risk_score || 33}%` }]} />
+                        <View style={[styles.progressBarFill, { width: `${st.risk_score || 0}%` }]} />
                       </View>
                     </View>
 

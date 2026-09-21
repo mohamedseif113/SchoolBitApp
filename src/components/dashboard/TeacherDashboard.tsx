@@ -83,9 +83,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     ? rawTasks
     : liveTasks.slice(0, 5);
 
-  // Real class performance
-  const classPerformance: any[] = Array.isArray(dashboardData?.class_performance)
-    ? dashboardData.class_performance
+  // Real class performance - supports all API key variations
+  const rawTeacherClasses = dashboardData?.class_performance || dashboardData?.classes_performance || dashboardData?.classes;
+  const classPerformance: any[] = Array.isArray(rawTeacherClasses)
+    ? rawTeacherClasses
     : [];
 
   // Top and follow-up students

@@ -25,16 +25,25 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = () => {
     ? portalStudents
     : selectedStudent
     ? [selectedStudent]
-    : [
-        {
-          id: 1,
-          name: 'طالب تجريبي',
-          class_number: 'أول/أ',
-          school: 'مدرسة تجربة الواجهات',
-        },
-      ];
+    : [];
 
-  const currentStudent = selectedStudent || studentsList[0];
+  const currentStudent = selectedStudent || (studentsList.length > 0 ? studentsList[0] : null);
+
+  if (!currentStudent || studentsList.length === 0) {
+    return (
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={[styles.childrenCard, isDark && styles.darkCard, { padding: 32, alignItems: 'center' }]}>
+          <Icon name="users" size={40} color="#94A3B8" />
+          <Text style={[{ fontSize: 16, fontWeight: '700', marginTop: 12, color: isDark ? '#FFFFFF' : '#0F172A' }]}>
+            {isRTL ? 'لا يوجد أبناء مرتبطون بهذا الحساب' : 'No linked students found'}
+          </Text>
+          <Text style={[{ fontSize: 13, color: '#94A3B8', marginTop: 4, textAlign: 'center' }]}>
+            {isRTL ? 'يرجى التواصل مع إدارة المدرسة لربط حسابك بأبنائك' : 'Please contact school administration to link your children'}
+          </Text>
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -88,8 +97,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = () => {
       <StudentDashboard
         studentId={currentStudent.id}
         studentName={currentStudent.name}
-        classNumber={currentStudent.class_number || 'أول/أ'}
-        schoolName={currentStudent.school || 'مدرسة تجربة الواجهات'}
+        classNumber={currentStudent.class_number || ''}
+        schoolName={currentStudent.school || ''}
       />
     </ScrollView>
   );

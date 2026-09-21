@@ -153,21 +153,7 @@ export default function StudentsScreen() {
     }
   }, [refetch, atRiskQuery]);
 
-  // Default classes list
-  const initialClassGroups: ClassGroupItem[] = useMemo(
-    () => [
-      { id: 1, name: '1/أ', grade: 'الصف الأول الابتدائي', type: 'طلاب', membersCount: 0 },
-      { id: 2, name: '1/ب', grade: 'الصف الأول الابتدائي', type: 'طلاب', membersCount: 0 },
-      { id: 3, name: '2/أ', grade: 'الصف الثاني الابتدائي', type: 'طلاب', membersCount: 0 },
-      { id: 4, name: '2/ب', grade: 'الصف الثاني الابتدائي', type: 'طلاب', membersCount: 0 },
-      { id: 5, name: '3/أ', grade: 'الصف الثالث الابتدائي', type: 'طلاب', membersCount: 0 },
-      { id: 6, name: '3/ب', grade: 'الصف الثالث الابتدائي', type: 'طلاب', membersCount: 0 },
-      { id: 7, name: '4/أ', grade: 'الصف الرابع الابتدائي', type: 'طلاب', membersCount: 0 },
-      { id: 8, name: '5/أ', grade: 'الصف الخامس الابتدائي', type: 'طلاب', membersCount: 0 },
-      { id: 9, name: '6/أ', grade: 'الصف السادس الابتدائي', type: 'طلاب', membersCount: 0 },
-    ],
-    []
-  );
+
 
   // Robust Arabic & digit normalizer for class and grade comparisons
   const normalizeClass = (name?: string) => {
@@ -487,9 +473,9 @@ export default function StudentsScreen() {
       });
     }
 
-    // 2. Use derived classes from allStudents. Fallback to initialClassGroups only if empty.
+    // 2. Use derived classes strictly from allStudents API data
     const derivedList = Array.from(classMap.values());
-    const combinedList = derivedList.length > 0 ? [...derivedList] : [...initialClassGroups];
+    const combinedList = [...derivedList];
 
     // Merge any user-added class from local state
     classesList.forEach((userCls) => {
@@ -516,7 +502,7 @@ export default function StudentsScreen() {
           membersCount: matched.length,
         };
       });
-  }, [classesList, initialClassGroups, allStudents, searchClass, isRTL]);
+  }, [classesList, allStudents, searchClass, isRTL]);
 
   const totalClassMembers = useMemo(
     () => allStudents.length,

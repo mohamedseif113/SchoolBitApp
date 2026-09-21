@@ -77,19 +77,20 @@ export const VicePrincipalDashboard: React.FC<VicePrincipalDashboardProps> = ({
   const attendanceRate = useMemo(() => {
     if (attendanceSummary?.attendance_rate != null) return `${attendanceSummary.attendance_rate}%`;
     if (kpis?.attendance_rate != null) return `${kpis.attendance_rate}%`;
-    return '0%';
+    return '100%';
   }, [attendanceSummary, kpis]);
 
   const absentCount = useMemo(() => {
     if (attendanceSummary?.absent_count != null) return attendanceSummary.absent_count;
     if (attendanceSummary?.absent_today != null) return attendanceSummary.absent_today;
     if (kpis?.absent_today != null) return kpis.absent_today;
-    return 18;
+    // Default fallback to 0 when attendance rate is 100%
+    return 0;
   }, [attendanceSummary, kpis]);
 
   const unexcusedCount = useMemo(() => {
     if (attendanceSummary?.unexcused_count != null) return attendanceSummary.unexcused_count;
-    if (attendanceSummary?.absent_count != null) return attendanceSummary.absent_count;
+    if (attendanceSummary?.unexcused_absent != null) return attendanceSummary.unexcused_absent;
     if (kpis?.unexcused_absent != null) return kpis.unexcused_absent;
     return absentCount;
   }, [attendanceSummary, kpis, absentCount]);
@@ -118,43 +119,67 @@ export const VicePrincipalDashboard: React.FC<VicePrincipalDashboardProps> = ({
     return 18;
   }, [atRiskList, kpis]);
 
-  // Classrooms performance data
-  const rawClasses = dashboardData?.classes_performance || dashboardData?.classes;
-  const classesList = Array.isArray(rawClasses) && rawClasses.length > 0
-    ? rawClasses
-    : [
-        { id: '1', class_name: '1/أ', attendance_rate: 0, students_count: 3, incidents_count: 4, room: '101' },
-        { id: '2', class_name: '2/أ', attendance_rate: 0, students_count: 2, incidents_count: 2, room: '102' },
-        { id: '3', class_name: '3/أ', attendance_rate: 0, students_count: 2, incidents_count: 1, room: '103' },
-        { id: '4', class_name: '1/ب', attendance_rate: 0, students_count: 3, incidents_count: 0, room: '104' },
-        { id: '5', class_name: '2/ب', attendance_rate: 0, students_count: 3, incidents_count: 0, room: '105' },
-        { id: '6', class_name: '3/ب', attendance_rate: 0, students_count: 2, incidents_count: 0, room: '106' },
-        { id: '7', class_name: '1/ج', attendance_rate: 0, students_count: 2, incidents_count: 0, room: '107' },
-        { id: '8', class_name: '2/ج', attendance_rate: 0, students_count: 2, incidents_count: 0, room: '108' },
-        { id: '9', class_name: '3/ج', attendance_rate: 0, students_count: 2, incidents_count: 0, room: '109' },
-      ];
+  // Classrooms performance data - normalized across all backend API key variants
+  const rawClasses =
+    dashboardData?.classes_performance ||
+    dashboardData?.class_performance ||
+    dashboardData?.classroom_performance ||
+    dashboardData?.classes ||
+    dashboardData?.classrooms;
 
-  // Incidents distribution breakdown
-  const incidentBreakdown = [
-    { label: 'تشويش على المعلم', percent: '14%', color: '#1D4ED8' },
-    { label: 'استخدام الهاتف', percent: '14%', color: '#0284C7' },
-    { label: 'تأخر متكرر', percent: '29%', color: '#E11D48' },
-    { label: 'عدم الالتزام بالزي', percent: '14%', color: '#6366F1' },
-    { label: 'تنمر على زميل', percent: '14%', color: '#0D9488' },
-    { label: 'غش في الاختبار', percent: '14%', color: '#D97706' },
-  ];
+  const classesList = useMemo(() => {
+    if (Array.isArray(rawClasses) && rawClasses.length > 0) {
+      return rawClasses.map((item: any, idx: number) => ({
+        id: item.id || String(idx + 1),
+        class_name: item.class_name || item.cls || item.name || item.title || item.class || `فصل ${idx + 1}`,
+        attendance_rate: item.attendance_rate ?? item.att ?? item.rate ?? item.attendance ?? 0,
+        students_count: item.students_count ?? item.total ?? item.students ?? item.count ?? 0,
+        incidents_count: item.incidents_count ?? item.viol ?? item.violations ?? item.violations_count ?? item.incidents ?? 0,
+        room: item.room || item.room_number || `${101 + idx}`,
+        raw: item,
+      }));
+    }
+    return [];
+  }, [rawClasses]);
 
-  // Recent activity list
-  const recentActivities = [
-    { id: '1', title: 'إكمال مهمة: مهمة اختبار QA — حساب المعلم', time: '02:37 PM', icon: 'checkCircle', color: '#1D4ED8', bg: '#EFF6FF' },
-    { id: '2', title: 'تحديث مهمة: مهمة اختبار QA — حساب المعلم', time: '02:45 PM', icon: 'checkCircle', color: '#1D4ED8', bg: '#EFF6FF' },
-    { id: '3', title: 'تحديث مهمة: تجربة المهام', time: '02:45 PM', icon: 'checkCircle', color: '#1D4ED8', bg: '#EFF6FF' },
-    { id: '4', title: 'تسجيل حضور موظف', time: '07:05 PM', icon: 'edit', color: '#64748B', bg: '#F1F5F9' },
-    { id: '5', title: 'إنشاء ملف موظف', time: '09:16 AM', icon: 'fileText', color: '#64748B', bg: '#F1F5F9' },
-    { id: '6', title: 'تسجيل حضور موظف', time: '01:11 PM', icon: 'edit', color: '#64748B', bg: '#F1F5F9' },
-    { id: '7', title: 'إنشاء نموذج: نموذج جديد', time: '01:10 PM', icon: 'fileText', color: '#1D4ED8', bg: '#EFF6FF' },
-    { id: '8', title: 'تسجيل حضور موظف', time: '07:05 PM', icon: 'edit', color: '#64748B', bg: '#F1F5F9' },
-  ];
+  // Incidents distribution breakdown - derived exclusively from API response
+  const rawIncidents =
+    dashboardData?.incident_breakdown ||
+    dashboardData?.incident_distribution ||
+    dashboardData?.incidents_breakdown ||
+    dashboardData?.incidents_distribution;
+
+  const incidentBreakdown = useMemo(() => {
+    if (Array.isArray(rawIncidents) && rawIncidents.length > 0) {
+      const colors = ['#1D4ED8', '#0284C7', '#E11D48', '#6366F1', '#0D9488', '#D97706'];
+      return rawIncidents.map((item: any, idx: number) => ({
+        label: item.label || item.name || item.title || item.type || `مخالفة ${idx + 1}`,
+        percent: item.percent || item.percentage || `${item.count || 0}%`,
+        color: item.color || colors[idx % colors.length],
+      }));
+    }
+    return [];
+  }, [rawIncidents]);
+
+  // Recent activity list - derived exclusively from API response
+  const rawActivities =
+    dashboardData?.recent_activity ||
+    dashboardData?.recent_activities ||
+    dashboardData?.activities;
+
+  const recentActivities = useMemo(() => {
+    if (Array.isArray(rawActivities) && rawActivities.length > 0) {
+      return rawActivities.map((act: any, idx: number) => ({
+        id: act.id || String(idx + 1),
+        title: act.title || act.description || act.name || act.action || `نشاط ${idx + 1}`,
+        time: act.time || act.created_at || act.date || '',
+        icon: act.icon || 'checkCircle',
+        color: act.color || '#1D4ED8',
+        bg: act.bg || '#EFF6FF',
+      }));
+    }
+    return [];
+  }, [rawActivities]);
 
   const handleNotifyParents = () => {
     setNotifSentAlert(true);
@@ -593,52 +618,60 @@ export const VicePrincipalDashboard: React.FC<VicePrincipalDashboardProps> = ({
           </View>
 
           {/* Table Rows */}
-          {classesList.map((item, idx) => (
-            <View key={String(item.id || idx)} style={[styles.tableDataRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <AppText variant="bodyBold" color={isDark ? '#FFFFFF' : '#0F172A'} style={[styles.tdClass, { textAlign: isRTL ? 'right' : 'left' }]}>
-                {item.class_name || `فصل ${idx + 1}`}
+          {classesList.length === 0 ? (
+            <View style={{ padding: 24, alignItems: 'center', justifyContent: 'center' }}>
+              <AppText variant="caption" color="#94A3B8">
+                {isRTL ? 'لا توجد فصول دراسية' : 'No classrooms available'}
               </AppText>
-
-              <View style={[styles.tdAttendance, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <View style={styles.tableProgressTrack}>
-                  <View style={[styles.tableProgressFill, { width: `${item.attendance_rate || 0}%` }]} />
-                </View>
-                <AppText variant="caption" color="#E11D48" style={styles.rateText}>
-                  {`${item.attendance_rate || 0}%`}
+            </View>
+          ) : (
+            classesList.map((item, idx) => (
+              <View key={String(item.id || idx)} style={[styles.tableDataRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <AppText variant="bodyBold" color={isDark ? '#FFFFFF' : '#0F172A'} style={[styles.tdClass, { textAlign: isRTL ? 'right' : 'left' }]}>
+                  {item.class_name || `فصل ${idx + 1}`}
                 </AppText>
-              </View>
 
-              <AppText variant="bodyBold" color={isDark ? '#FFFFFF' : '#0F172A'} style={styles.tdStudents}>
-                {String(item.students_count || 2)}
-              </AppText>
-
-              <View style={styles.tdIncidents}>
-                <View
-                  style={[
-                    styles.incidentPill,
-                    item.incidents_count > 0 ? styles.incidentPillYellow : styles.incidentPillGrey,
-                  ]}
-                >
-                  <AppText
-                    variant="captionBold"
-                    color={item.incidents_count > 0 ? '#B45309' : '#64748B'}
-                  >
-                    {String(item.incidents_count || 0)}
+                <View style={[styles.tdAttendance, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  <View style={styles.tableProgressTrack}>
+                    <View style={[styles.tableProgressFill, { width: `${item.attendance_rate || 0}%` }]} />
+                  </View>
+                  <AppText variant="caption" color="#E11D48" style={styles.rateText}>
+                    {`${item.attendance_rate || 0}%`}
                   </AppText>
                 </View>
-              </View>
 
-              <TouchableOpacity
-                style={styles.tableActionBtn}
-                onPress={() => setSelectedClassModal(item)}
-                activeOpacity={0.7}
-              >
-                <AppText variant="captionBold" color="#1D4ED8">
-                  {isRTL ? 'عرض' : 'View'}
+                <AppText variant="bodyBold" color={isDark ? '#FFFFFF' : '#0F172A'} style={styles.tdStudents}>
+                  {String(item.students_count || 0)}
                 </AppText>
-              </TouchableOpacity>
-            </View>
-          ))}
+
+                <View style={styles.tdIncidents}>
+                  <View
+                    style={[
+                      styles.incidentPill,
+                      item.incidents_count > 0 ? styles.incidentPillYellow : styles.incidentPillGrey,
+                    ]}
+                  >
+                    <AppText
+                      variant="captionBold"
+                      color={item.incidents_count > 0 ? '#B45309' : '#64748B'}
+                    >
+                      {String(item.incidents_count || 0)}
+                    </AppText>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.tableActionBtn}
+                  onPress={() => setSelectedClassModal(item)}
+                  activeOpacity={0.7}
+                >
+                  <AppText variant="captionBold" color="#1D4ED8">
+                    {isRTL ? 'عرض' : 'View'}
+                  </AppText>
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
         </View>
 
         {/* Left Card: توزيع المخالفات (Incident Distribution Donut) */}
@@ -651,7 +684,7 @@ export const VicePrincipalDashboard: React.FC<VicePrincipalDashboardProps> = ({
               </AppText>
             </View>
             <AppText variant="caption" color="#94A3B8">
-              {isRTL ? 'هذا الشهر — 7 مخالفة' : 'This Month — 7'}
+              {isRTL ? `${incidentBreakdown.length} نوع` : `${incidentBreakdown.length} types`}
             </AppText>
           </View>
 
@@ -661,32 +694,36 @@ export const VicePrincipalDashboard: React.FC<VicePrincipalDashboardProps> = ({
             <View style={styles.donutGraphicBox}>
               <Svg width="110" height="110" viewBox="0 0 110 110">
                 <Circle cx="55" cy="55" r="42" stroke="#F1F5F9" strokeWidth="12" fill="none" />
-                <Circle cx="55" cy="55" r="42" stroke="#1D4ED8" strokeWidth="12" strokeDasharray="50 200" strokeDashoffset="0" fill="none" />
-                <Circle cx="55" cy="55" r="42" stroke="#0284C7" strokeWidth="12" strokeDasharray="40 200" strokeDashoffset="-50" fill="none" />
-                <Circle cx="55" cy="55" r="42" stroke="#E11D48" strokeWidth="12" strokeDasharray="75 200" strokeDashoffset="-90" fill="none" />
-                <Circle cx="55" cy="55" r="42" stroke="#6366F1" strokeWidth="12" strokeDasharray="35 200" strokeDashoffset="-165" fill="none" />
-                <Circle cx="55" cy="55" r="42" stroke="#D97706" strokeWidth="12" strokeDasharray="35 200" strokeDashoffset="-200" fill="none" />
+                {incidentBreakdown.length > 0 && (
+                  <Circle cx="55" cy="55" r="42" stroke="#1D4ED8" strokeWidth="12" strokeDasharray="50 200" strokeDashoffset="0" fill="none" />
+                )}
               </Svg>
               <View style={styles.donutCenterLabel}>
                 <AppText variant="cardTitle" weight="extraBold" color="#0F172A">
-                  7
+                  {String(incidentBreakdown.length)}
                 </AppText>
                 <AppText variant="caption" color="#94A3B8" style={{ fontSize: 9 }}>
-                  {isRTL ? 'مخالفة' : 'Incidents'}
+                  {isRTL ? 'نوع' : 'Types'}
                 </AppText>
               </View>
             </View>
 
             {/* Legend Col */}
             <View style={[styles.legendListCol, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-              {incidentBreakdown.map((item, i) => (
-                <View key={i} style={[styles.donutLegendItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <View style={[styles.donutDot, { backgroundColor: item.color }]} />
-                  <AppText variant="caption" color="#64748B" style={styles.donutLegendText}>
-                    {`${item.percent} ${item.label}`}
-                  </AppText>
-                </View>
-              ))}
+              {incidentBreakdown.length === 0 ? (
+                <AppText variant="caption" color="#94A3B8" style={{ paddingVertical: 12 }}>
+                  {isRTL ? 'لا توجد بيانات مخالفات' : 'No incident data'}
+                </AppText>
+              ) : (
+                incidentBreakdown.map((item, i) => (
+                  <View key={i} style={[styles.donutLegendItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.donutDot, { backgroundColor: item.color }]} />
+                    <AppText variant="caption" color="#64748B" style={styles.donutLegendText}>
+                      {`${item.percent} ${item.label}`}
+                    </AppText>
+                  </View>
+                ))
+              )}
             </View>
           </View>
 
@@ -900,28 +937,36 @@ export const VicePrincipalDashboard: React.FC<VicePrincipalDashboardProps> = ({
 
         {/* Activity Grid Tiles */}
         <View style={[styles.activityGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          {recentActivities.map((act) => (
-            <View
-              key={act.id}
-              style={[
-                styles.activityTile,
-                { flexDirection: isRTL ? 'row-reverse' : 'row' },
-                isDark && styles.darkActivityTile,
-              ]}
-            >
-              <View style={[styles.activityIconBox, { backgroundColor: act.bg }]}>
-                <Icon name={act.icon as any} size={15} color={act.color} />
-              </View>
-              <View style={[styles.activityTextCol, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                <AppText variant="captionBold" color={isDark ? '#FFFFFF' : '#0F172A'} numberOfLines={1}>
-                  {act.title}
-                </AppText>
-                <AppText variant="caption" color="#94A3B8" style={{ fontSize: 10 }}>
-                  {act.time}
-                </AppText>
-              </View>
+          {recentActivities.length === 0 ? (
+            <View style={{ padding: 24, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+              <AppText variant="caption" color="#94A3B8">
+                {isRTL ? 'لا توجد نشاطات حديثة' : 'No recent activities'}
+              </AppText>
             </View>
-          ))}
+          ) : (
+            recentActivities.map((act) => (
+              <View
+                key={act.id}
+                style={[
+                  styles.activityTile,
+                  { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                  isDark && styles.darkActivityTile,
+                ]}
+              >
+                <View style={[styles.activityIconBox, { backgroundColor: act.bg }]}>
+                  <Icon name={act.icon as any} size={15} color={act.color} />
+                </View>
+                <View style={[styles.activityTextCol, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                  <AppText variant="captionBold" color={isDark ? '#FFFFFF' : '#0F172A'} numberOfLines={1}>
+                    {act.title}
+                  </AppText>
+                  <AppText variant="caption" color="#94A3B8" style={{ fontSize: 10 }}>
+                    {act.time}
+                  </AppText>
+                </View>
+              </View>
+            ))
+          )}
         </View>
       </View>
 

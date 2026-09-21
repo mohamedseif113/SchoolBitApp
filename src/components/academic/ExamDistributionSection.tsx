@@ -65,10 +65,10 @@ export const ExamDistributionSection: React.FC<Props> = ({ isDark = false }) => 
   }, [rawSessions, selectedSessionId]);
 
   const kpis = useMemo(() => {
-    const totalStudents = rawDistributions.reduce((acc, d) => acc + (d.students_count || 0), 0) || rawSeats.length || 21;
-    const distributed = rawSeats.length || totalStudents;
+    const totalStudents = rawDistributions.reduce((acc, d) => acc + (d.students_count || 0), 0) || rawSeats.length;
+    const distributed = rawSeats.length;
     const notDistributed = Math.max(0, totalStudents - distributed);
-    const hallsCount = rawRooms.length || 2;
+    const hallsCount = rawRooms.length;
     const conflicts = 0;
 
     return {
@@ -79,6 +79,18 @@ export const ExamDistributionSection: React.FC<Props> = ({ isDark = false }) => 
       conflicts,
     };
   }, [rawDistributions, rawRooms, rawSeats]);
+
+  const hallSeats = useMemo(() => {
+    if (Array.isArray(rawSeats) && rawSeats.length > 0) {
+      return rawSeats
+        .filter((s: any) => String(s.room_name || s.room_id || s.hall_id) === String(selectedHallId))
+        .map((s: any, idx: number) => ({
+          seat: s.seat_number || s.seat || idx + 1,
+          name: s.student_name || s.name || s.student?.name || `طالب ${idx + 1}`,
+        }));
+    }
+    return [];
+  }, [rawSeats, selectedHallId]);
 
   const handleCreateSession = async () => {
     if (!sessionTitleInput.trim()) {
@@ -279,33 +291,20 @@ export const ExamDistributionSection: React.FC<Props> = ({ isDark = false }) => 
 
             {/* 2-Column Student Distribution Cards Grid (Exact Web match) */}
             <View style={[styles.students2ColGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              {(selectedHallId === '02'
-                ? [
-                    { seat: 1, name: 'أنس وليد' },
-                    { seat: 3, name: 'تركي فريد' },
-                    { seat: 5, name: 'حسام عادل' },
-                    { seat: 7, name: 'راكان مساعد' },
-                    { seat: 9, name: 'زياد فهد' },
-                    { seat: 11, name: 'سلمان محمد' },
-                    { seat: 13, name: 'عبدالرحمن ناصر' },
-                    { seat: 15, name: 'عمر ماجد' },
-                  ]
-                : [
-                    { seat: 2, name: 'بندر عايض الغامدي' },
-                    { seat: 4, name: 'ثامر عبدالمحسن المقرن' },
-                    { seat: 6, name: 'خالد سلطان المطيري' },
-                    { seat: 8, name: 'ريان خالد العسيري' },
-                    { seat: 10, name: 'سعود راشد السلمي' },
-                    { seat: 12, name: 'طلال منصور الخالدي' },
-                    { seat: 14, name: 'عبدالله حمد الصبيحي' },
-                    { seat: 16, name: 'فيصل عبدالله القحطاني' },
-                  ]
-              ).map((st) => (
-                <View key={st.seat} style={styles.studentSeatRowCard}>
-                  <Text style={styles.seatNumBadge}>{st.seat}</Text>
-                  <Text style={styles.studentNameLabel} numberOfLines={1}>{st.name}</Text>
+              {hallSeats.length === 0 ? (
+                <View style={{ padding: 24, width: '100%', alignItems: 'center' }}>
+                  <Text style={{ color: '#94A3B8', fontFamily: ibmPlexArabicFontFamily }}>
+                    {isRTL ? 'لا يوجد طلاب محددون لهذه القاعة' : 'No students assigned to this hall'}
+                  </Text>
                 </View>
-              ))}
+              ) : (
+                hallSeats.map((st) => (
+                  <View key={st.seat} style={styles.studentSeatRowCard}>
+                    <Text style={styles.seatNumBadge}>{st.seat}</Text>
+                    <Text style={styles.studentNameLabel} numberOfLines={1}>{st.name}</Text>
+                  </View>
+                ))
+              )}
             </View>
           </View>
         </>

@@ -69,12 +69,12 @@ export const SeatNumbersSection: React.FC<Props> = ({ isDark = false }) => {
     );
   }, [rawSeats, search]);
 
-  // Group seats by room
+  // Group seats by room ensuring seat numbers are sequential (1..16) without missing seat 8
   const seatsByRoom = useMemo(() => {
     const groups: Record<string, any[]> = {};
     if (filteredSeats.length > 0) {
       filteredSeats.forEach((seat) => {
-        const roomId = String(seat.room_name || seat.room_id || '02');
+        const roomId = String(seat.room_name || seat.room_id || '01');
         if (!groups[roomId]) groups[roomId] = [];
         groups[roomId].push(seat);
       });

@@ -37,33 +37,7 @@ interface StudentAttendanceRow {
   status?: 'present' | 'absent' | 'late' | 'excused' | 'no_school';
 }
 
-// Complete fallback roster for teacher daily attendance when API returns empty
-const FALLBACK_STUDENTS: StudentAttendanceRow[] = [
-  { id: 101, name: 'محمد عبد الله العتيبي', national_id: '1098234851', class_name: '1/أ', status: 'present' },
-  { id: 102, name: 'فهد سليمان الدوسري', national_id: '1087263412', class_name: '1/أ', status: 'present' },
-  { id: 103, name: 'عبد الرحمن الشمري', national_id: '1076251439', class_name: '1/أ', status: 'absent' },
-  { id: 104, name: 'خالد إبراهيم القحطاني', national_id: '1065140328', class_name: '1/ب', status: 'present' },
-  { id: 105, name: 'سعد عمر المالكي', national_id: '1054039217', class_name: '1/ب', status: 'late' },
-  { id: 106, name: 'سلطان عادل الحربي', national_id: '1043928106', class_name: '1/ب', status: 'present' },
-  { id: 107, name: 'تركي فيصل الزهراني', national_id: '1032817095', class_name: '2/أ', status: 'excused' },
-  { id: 108, name: 'نايف عبد العزيز المطيري', national_id: '1021706984', class_name: '2/أ', status: 'present' },
-  { id: 109, name: 'سلمان يوسف الغامدي', national_id: '1010595873', class_name: '2/أ', status: 'present' },
-  { id: 110, name: 'ياسر مشاري العنيزي', national_id: '1009484762', class_name: '2/ب', status: 'absent' },
-  { id: 111, name: 'زياد بدر العجمي', national_id: '1098373651', class_name: '2/ب', status: 'present' },
-  { id: 112, name: 'معاذ حمد الشهري', national_id: '1087262540', class_name: '2/ب', status: 'present' },
-  { id: 113, name: 'ريان ناصر البقمي', national_id: '1076151429', class_name: '3/أ', status: 'present' },
-  { id: 114, name: 'عبد المجيد طلال العتيبي', national_id: '1065040318', class_name: '3/أ', status: 'late' },
-  { id: 115, name: 'أحمد منصور السبيعي', national_id: '1053939207', class_name: '3/أ', status: 'present' },
-  { id: 116, name: 'وليد ماجد الرويلي', national_id: '1042828096', class_name: '3/ب', status: 'absent' },
-  { id: 117, name: 'نواف بندر الجوف', national_id: '1031716985', class_name: '3/ب', status: 'present' },
-  { id: 118, name: 'بدر مشعل الرشيدي', national_id: '1020605874', class_name: '3/ب', status: 'present' },
-  { id: 119, name: 'مشاري حاتم عسيري', national_id: '1009494763', class_name: '4/أ', status: 'excused' },
-  { id: 120, name: 'حمزة عثمان الخالدي', national_id: '1098383652', class_name: '4/أ', status: 'present' },
-  { id: 121, name: 'سيف نواف الحارثي', national_id: '1087272541', class_name: '5/أ', status: 'present' },
-  { id: 122, name: 'البراء فواز الصاعدي', national_id: '1076161430', class_name: '6/أ', status: 'present' },
-];
-
-export default function AttendanceScreen() {
+export const AttendanceScreen: React.FC = () => {
   const { t } = useTranslation();
   const { isRTL } = useAppDirection();
   const { theme } = useUiStore();
@@ -80,10 +54,10 @@ export default function AttendanceScreen() {
   const [datePickerModalOpen, setDatePickerModalOpen] = useState(false);
   const [tempDate, setTempDate] = useState(currentDateIso);
   const [refreshing, setRefreshing] = useState(false);
-  const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isSyncingBioTime, setIsSyncingBioTime] = useState(false);
 
-  // New Search & Status Filter states
+  // Search & Status Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
@@ -102,6 +76,11 @@ export default function AttendanceScreen() {
     isSaving,
   } = useAttendance(currentDateIso, selectedClass !== 'all' ? selectedClass : undefined);
 
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -111,37 +90,77 @@ export default function AttendanceScreen() {
     }
   }, [refetch, refetchStudents]);
 
-  // Combine real students from API or fall back to full roster
+
+
+  const getStudentClassString = (st: any): string => {
+    if (!st) return '';
+    if (typeof st.class_name === 'string' && st.class_name && st.class_name !== '—') return st.class_name;
+    if (typeof st.classroom === 'string' && st.classroom) return st.classroom;
+    if (st.classroom && typeof st.classroom === 'object') return st.classroom.name || st.classroom.title || st.classroom.class_name || '';
+    if (typeof st.section === 'string' && st.section) return st.section;
+    if (st.section && typeof st.section === 'object') return st.section.name || st.section.title || '';
+    if (typeof st.class === 'string' && st.class) return st.class;
+    if (st.class && typeof st.class === 'object') return st.class.name || st.class.title || '';
+    if (typeof st.section_name === 'string' && st.section_name) return st.section_name;
+    if (typeof st.grade_name === 'string' && st.grade_name) return st.grade_name;
+    if (st.class_number != null) return String(st.class_number);
+    return '';
+  };
+
   const realStudents: StudentAttendanceRow[] = useMemo(() => {
-    let list: StudentAttendanceRow[] = [];
+    const list: StudentAttendanceRow[] = [];
 
-    // 1. Map from apiStudents if available
     if (Array.isArray(apiStudents) && apiStudents.length > 0) {
-      list = apiStudents.map((st: any, idx: number) => ({
-        id: st.id || st.student_id || idx + 1,
-        name: st.name || `${st.first_name || ''} ${st.last_name || ''}`.trim() || st.student_name || 'طالب',
-        national_id: String(st.national_id || st.idNum || st.identity_number || st.student_number || `10${idx + 10000000}`),
-        class_name: st.class_name || (st as any).classroom || st.section_name || st.group_name || '1/أ',
-        status: st.attendance_status || st.status || st.daily_status || 'present',
-      }));
-    }
-    // 2. Map from apiClasses if available
-    else if (Array.isArray(apiClasses) && apiClasses.length > 0) {
-      list = apiClasses.map((st: any, idx: number) => ({
-        id: st.id || st.student_id || idx + 1,
-        name: st.name || st.student_name || 'طالب',
-        national_id: String(st.national_id || st.identity_number || `10${idx + 10000000}`),
-        class_name: st.class_name || st.section_name || '1/أ',
-        status: st.status || st.attendance_status || 'present',
-      }));
+      apiStudents.forEach((st: any, idx: number) => {
+        const className = getStudentClassString(st) || '—';
+        list.push({
+          id: st.id || st.student_id || idx + 1,
+          name: st.name || `${st.first_name || ''} ${st.last_name || ''}`.trim() || 'طالب',
+          national_id: st.national_id || st.identity_number || st.id_number || '—',
+          class_name: className,
+          status: st.status || 'present',
+        });
+      });
     }
 
-    // 3. Fallback to complete student roster if API returns empty
-    if (list.length === 0) {
-      return FALLBACK_STUDENTS;
+    if (Array.isArray(apiClasses) && apiClasses.length > 0) {
+      apiClasses.forEach((cls: any, idx: number) => {
+        const className = getStudentClassString(cls) || cls.name || cls.title || '—';
+        const recs = Array.isArray(cls.records)
+          ? cls.records
+          : Array.isArray(cls.students)
+          ? cls.students
+          : [];
+        recs.forEach((st: any, sIdx: number) => {
+          const stClassName = getStudentClassString(st) || className;
+          list.push({
+            id: st.id || st.student_id || `${cls.id || idx}-${sIdx}`,
+            name: st.name || st.student_name || `${st.first_name || ''} ${st.last_name || ''}`.trim() || 'طالب',
+            national_id: st.national_id || st.identity_number || st.id_number || '—',
+            class_name: stClassName,
+            status: st.status || 'present',
+          });
+        });
+        if (recs.length === 0 && (cls.name || cls.student_name || cls.student_id || cls.id)) {
+          list.push({
+            id: cls.id || cls.student_id || idx + 1,
+            name: cls.name || cls.student_name || 'طالب',
+            national_id: cls.national_id || cls.identity_number || cls.id_number || '—',
+            class_name: className,
+            status: cls.status || 'present',
+          });
+        }
+      });
     }
 
-    return list;
+    const uniqueMap = new Map<string | number, StudentAttendanceRow>();
+    list.forEach((st) => {
+      if (!uniqueMap.has(st.id)) {
+        uniqueMap.set(st.id, st);
+      }
+    });
+
+    return Array.from(uniqueMap.values());
   }, [apiStudents, apiClasses]);
 
   // Sync initial student statuses on data load
@@ -157,60 +176,34 @@ export default function AttendanceScreen() {
 
   const classOptions = useMemo(() => {
     const set = new Set<string>();
-    realStudents.forEach((st) => {
-      if (st.class_name) set.add(st.class_name);
-    });
-    const list = Array.from(set).filter(Boolean);
-    if (list.length === 0) return ['all', '1/أ', '1/ب', '2/أ', '2/ب', '3/أ', '3/ب', '4/أ', '5/أ', '6/أ'];
-    return ['all', ...list];
-  }, [realStudents]);
 
-  const handleMarkAllPresent = () => {
-    const updated: Record<string | number, string> = { ...studentStatuses };
-    displayStudents.forEach((st) => {
-      updated[st.id] = 'present';
-    });
-    setStudentStatuses(updated);
-    showToast(isRTL ? 'تم تحديد جميع الطلاب كـ (حاضر)' : 'Marked all displayed students as Present');
-  };
-
-  const handleMarkAllAbsent = () => {
-    const updated: Record<string | number, string> = { ...studentStatuses };
-    displayStudents.forEach((st) => {
-      updated[st.id] = 'absent';
-    });
-    setStudentStatuses(updated);
-    showToast(isRTL ? 'تم تحديد جميع الطلاب كـ (غائب)' : 'Marked all displayed students as Absent');
-  };
-
-  const handleSaveAttendance = async () => {
-    try {
-      const records: any[] = [];
-      displayStudents.forEach((st) => {
-        const status = studentStatuses[st.id] || st.status || 'present';
-        records.push({
-          student_id: String(st.id),
-          status: status,
-          date: currentDateIso,
-          class_name: st.class_name,
-        });
+    if (Array.isArray(apiClasses)) {
+      apiClasses.forEach((cls: any) => {
+        const name = getStudentClassString(cls) || cls.name || cls.title;
+        if (name && typeof name === 'string' && name.trim() && name !== '—') {
+          set.add(name.trim());
+        }
       });
-
-      await saveAttendance({
-        date: currentDateIso,
-        records,
-      } as any);
-
-      showToast(
-        isRTL
-          ? `تم حفظ وحصر حضور ${records.length} طالب عبر الـ API بنجاح`
-          : `Attendance saved for ${records.length} students via API successfully`
-      );
-      await refetch();
-    } catch (err: any) {
-      showToast(err?.message || (isRTL ? 'حدث خطأ أثناء حفظ الحضور عبر الـ API' : 'Error saving attendance via API'));
     }
-  };
+
+    if (Array.isArray(apiStudents)) {
+      apiStudents.forEach((st: any) => {
+        const name = getStudentClassString(st);
+        if (name && typeof name === 'string' && name.trim() && name !== '—') {
+          set.add(name.trim());
+        }
+      });
+    }
+
+    realStudents.forEach((st) => {
+      if (st.class_name && st.class_name !== '—') {
+        set.add(st.class_name.trim());
+      }
+    });
+
+    const list = Array.from(set).filter(Boolean);
+    return ['all', ...list];
+  }, [apiClasses, apiStudents, realStudents]);
 
   // Filter students based on class selection, search query, and status filter
   const displayStudents = useMemo(() => {
@@ -235,7 +228,67 @@ export default function AttendanceScreen() {
     });
   }, [realStudents, selectedClass, searchQuery, statusFilter, studentStatuses]);
 
-  // Live dynamic calculation of KPI statistics
+  const handleSaveAttendance = async (customStatuses?: Record<string | number, string>) => {
+    try {
+      const statusesToUse = customStatuses || studentStatuses;
+      const records: any[] = [];
+      const targetList = selectedClass !== 'all' ? displayStudents : realStudents;
+
+      targetList.forEach((st) => {
+        const status = statusesToUse[st.id] || st.status || 'present';
+        records.push({
+          student_id: String(st.id),
+          status: status,
+          date: currentDateIso,
+          class_name: st.class_name,
+        });
+      });
+
+      await saveAttendance({
+        date: currentDateIso,
+        records,
+      } as any);
+
+      let presCount = 0;
+      let absCount = 0;
+      targetList.forEach((st) => {
+        const s = statusesToUse[st.id] || st.status || 'present';
+        if (s === 'present') presCount++;
+        if (s === 'absent') absCount++;
+      });
+
+      showToast(
+        isRTL
+          ? `تم حفظ وحصر الحضور عبر الـ API بنجاح (حاضر: ${presCount} ، غائب: ${absCount})`
+          : `Attendance saved via API successfully (Present: ${presCount}, Absent: ${absCount})`
+      );
+      await refetch();
+    } catch (err: any) {
+      showToast(err?.message || (isRTL ? 'حدث خطأ أثناء حفظ الحضور عبر الـ API' : 'Error saving attendance via API'));
+    }
+  };
+
+  const handleMarkAllPresent = async () => {
+    const updated: Record<string | number, string> = { ...studentStatuses };
+    displayStudents.forEach((st) => {
+      updated[st.id] = 'present';
+    });
+    setStudentStatuses(updated);
+    showToast(isRTL ? 'جاري حفظ تحديد الكل (حاضر) عبر الـ API...' : 'Saving all as Present via API...');
+    await handleSaveAttendance(updated);
+  };
+
+  const handleMarkAllAbsent = async () => {
+    const updated: Record<string | number, string> = { ...studentStatuses };
+    displayStudents.forEach((st) => {
+      updated[st.id] = 'absent';
+    });
+    setStudentStatuses(updated);
+    showToast(isRTL ? 'جاري حفظ تحديد الكل (غائب) عبر الـ API...' : 'Saving all as Absent via API...');
+    await handleSaveAttendance(updated);
+  };
+
+  // Live dynamic calculation of KPI statistics matching the active roster & statuses
   const kpiStats = useMemo(() => {
     let present = 0;
     let absent = 0;
@@ -278,12 +331,6 @@ export default function AttendanceScreen() {
     return colorsList[charCode % colorsList.length];
   };
 
-  const showToast = (message: string) => {
-    setActionNotice(message);
-    setTimeout(() => {
-      setActionNotice(null);
-    }, 3000);
-  };
 
   const handleExportPDF = () => {
     showToast(isRTL ? 'جاري تصدير كشف الحضور بصيغة PDF...' : 'Exporting attendance sheet to PDF...');
@@ -309,11 +356,11 @@ export default function AttendanceScreen() {
       >
         <View style={styles.pageWrapper}>
           {/* Notification Toast Alert */}
-          {actionNotice && (
+          {toastMessage && (
             <View style={styles.toastNotice}>
               <Icon name="info" size={16} color="#FFFFFF" />
               <AppText variant="captionBold" color="#FFFFFF">
-                {actionNotice}
+                {toastMessage}
               </AppText>
             </View>
           )}
@@ -844,12 +891,19 @@ export default function AttendanceScreen() {
                 {/* Primary Save Daily Attendance Button */}
                 <TouchableOpacity
                   activeOpacity={0.85}
-                  style={styles.saveAttendancePrimaryBtn}
-                  onPress={handleSaveAttendance}
+                  style={[styles.saveAttendancePrimaryBtn, isSaving && { opacity: 0.7 }]}
+                  onPress={() => handleSaveAttendance()}
+                  disabled={isSaving}
                 >
-                  <Icon name="check" size={18} color="#FFFFFF" />
+                  {isSaving ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Icon name="check" size={18} color="#FFFFFF" />
+                  )}
                   <AppText variant="bodyBold" color="#FFFFFF">
-                    {isRTL ? 'تأكيد وحفظ الحضور اليومي عبر الـ API' : 'Confirm & Save Daily Attendance via API'}
+                    {isSaving
+                      ? (isRTL ? 'جاري الحفظ عبر الـ API...' : 'Saving to API...')
+                      : (isRTL ? 'تأكيد وحفظ الحضور اليومي عبر الـ API' : 'Confirm & Save Daily Attendance via API')}
                   </AppText>
                 </TouchableOpacity>
                 </>
@@ -1753,3 +1807,5 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
 });
+
+export default AttendanceScreen;
