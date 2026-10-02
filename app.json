@@ -7,7 +7,13 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "SchoolBit requires photo library access to allow uploading school license documents during registration.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.mohamedseif113.schoolbit",
+      "appleTeamId": "SS58H9DK74"
     },
     "android": {
       "adaptiveIcon": {
@@ -15,7 +21,10 @@
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.mohamedseif113.schoolbit"
+      "package": "com.mohamedseif113.schoolbit",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -28,6 +37,12 @@
           "image": "./assets/firstbackground.png",
           "resizeMode": "contain",
           "backgroundColor": "#07132B"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "SchoolBit requires photo library access to allow uploading school license documents during registration."
         }
       ]
     ],
